@@ -15,19 +15,26 @@ Buka `demo.html` (butuh `flip-clock.js` di folder yang sama) untuk melihat semua
 
 ### 1. Lewat CDN (paling mudah)
 
+Untuk production, jangan pakai `@main` bila tujuanmu agar browser tidak tetap pakai versi lama. Gunakan tag versi yang stabil atau tambahkan cache-busting query string.
+
 ```html
-<script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@v1.0.2/Flip%20Clock/flip-clock.js"></script>
 <div data-fixs-flipclock data-theme="dark"></div>
 ```
 
-Untuk produksi, disarankan mengunci versi dengan tag/release, misalnya `@v1.0.0` menggantikan `@main`, supaya tampilan tidak berubah saat ada update.
+Atau bila load dari GitHub Pages / static file yang sama, gunakan versi query:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js?v=1.0.2"></script>
+<div data-fixs-flipclock data-theme="dark"></div>
+```
 
 ### 2. File lokal
 
 Unduh `flip-clock.js`, simpan di proyek kamu, lalu:
 
 ```html
-<script src="flip-clock.js"></script>
+<script src="flip-clock.js?v=1.0.2"></script>
 <div data-fixs-flipclock data-theme="light"></div>
 ```
 
@@ -68,7 +75,7 @@ Unduh `flip-clock.js`, simpan di proyek kamu, lalu:
 | `align` | `data-align` | `center` | `left`, `center`, `right` |
 | `padding` | `data-padding` | `true` | `false` = tanpa padding luar (navbar/footer) |
 | `transparent` | `data-transparent` | `false` | Latar transparan, ikut warna website |
-| `position` | `data-position` | - | Mode melayang: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. Widget otomatis dipindah ke `<body>`, jadi tetap menempel di layar walau tag-nya ditaruh di footer/section yang punya `transform`/`filter` |
+| `position` | `data-position` | - | Mode melayang: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. Widget otomatis dipindah ke `<body>`, jadi tetap menempel di layar dan tidak ikut ancestor ber-`transform`/`filter`. |
 | `offset` | `data-offset` | `16` | Jarak dari tepi layar untuk mode melayang (px) |
 | `credit` | `data-credit` | `true` | Tulisan ©fixsarts.studio |
 | `loadFont` | - | `true` | Muat Oswald & Roboto dari Google Fonts. Set `false` untuk pakai font sendiri |
@@ -135,7 +142,7 @@ Semua contoh ini bisa dicoba dan diatur langsung di `demo.html`.
 - **Jam melayang menimpa widget lain (misal musik) di pojok yang sama**: pilih pojok berbeda via `data-position`, atau atur `data-offset` supaya ada jarak.
 - **Bagian tanggal/Tahun terpotong**: pastikan `data-fit` tidak diset `false`, dan container tidak lebih sempit dari jamnya. Sejak v1.0.1 padding container ikut dihitung.
 - **Elemen jam baru muncul belakangan (SPA, popup, builder)**: sejak v1.0.1 otomatis terdeteksi. Untuk cara manual: `FixsFlipClock.init()`.
-- Setelah update file, lakukan hard refresh (Ctrl+Shift+R). Link CDN `@main` bisa tersimpan di cache hingga beberapa jam; gunakan tag versi (`@v1.0.1`) agar pasti.
+- **Versi lama terus muncul meski file sudah diganti**: ini biasanya karena browser/CDN cache URL tetap sama. Solusi: pakai versi tetap (`@v1.0.2`) atau menambahkan query string (`?v=1.0.2`) dan lakukan hard refresh (`Ctrl+Shift+R`).
 
 ## Changelog
 
