@@ -1,5 +1,5 @@
 /*!
- * Fixs Flip Clock v1.0.0
+ * Fixs Flip Clock v1.0.1
  * Widget jam flip tanpa dependensi, bisa dipasang di website mana pun.
  * ©fixsarts.studio
  *
@@ -147,7 +147,7 @@
   /*  CSS (hidup di dalam Shadow DOM, jadi tidak bentrok dengan website) */
   /* ------------------------------------------------------------------ */
   var CSS = [
-    ':host{display:block}',
+    ':host{all:initial;display:block}',
     '*{box-sizing:border-box;margin:0;padding:0}',
     '.clock{--h:160px;--d:.3s;',
     '  display:flex;flex-direction:column;align-items:var(--ai,center);justify-content:center;',
@@ -260,6 +260,10 @@
     var t = typeof target === 'string' ? document.querySelector(target) : target;
     if (!t) throw new Error('FixsFlipClock: elemen target tidak ditemukan');
 
+    if (t.__fsc && t.__fsc !== this) t.__fsc.destroy();   // cegah dobel di satu elemen
+    t.__fsc = this;
+    t.__fscOff = false;
+
     this.target = t;
     this.opts = merge(DEFAULTS, options || {});
     this.host = el('div', 'fixs-flipclock-host', t);
@@ -267,7 +271,6 @@
     this.tick = this.tick.bind(this);
 
     this._build();
-    this._render(false);
     this._schedule();
 
     var self = this;
@@ -277,6 +280,13 @@
     }
     this._onResize = function () { self._fit(); };
     window.addEventListener('resize', this._onResize);
+
+    // ukur ulang setelah font (Oswald/Roboto) selesai dimuat, karena lebar teks berubah
+    this._onFonts = function () { self._fit(); };
+    if (document.fonts) {
+      if (document.fonts.ready) document.fonts.ready.then(this._onFonts);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', this._onFonts);
+    }
   }
 
   FlipClock.prototype._formatters = function () {
@@ -295,6 +305,7 @@
   FlipClock.prototype._build = function () {
     var o = this.opts, show = o.show, self = this;
 
+    this._ready = false;
     if (o.loadFont) loadFont();
     this._formatters();
 
@@ -350,31 +361,70 @@
     this.creditEl = o.credit ? el('div', 'credit', clock) : null;
     if (this.creditEl) this.creditEl.textContent = '\u00A9fixsarts.studio';
 
+    this._dt = null;
+    this._render(false);   // isi angka & tanggal dulu supaya lebar tanggal ikut terukur
+    this._ready = true;
     this._fit();
   };
 
-  /** Mode melayang: tempel di pojok layar (position: fixed). */
+  /**
+   * Penempatan host.
+   * - Mode melayang: host dipindah ke <body> supaya `position: fixed` selalu relatif ke layar.
+   *   Kalau tetap di dalam footer/section, ancestor yang punya transform / filter / backdrop-filter /
+   *   contain / will-change akan "menyandera" fixed sehingga jam ikut posisi ancestor (bug "nyangkut di footer").
+   * - Semua properti kritis dipasang inline + !important agar tidak ditimpa CSS website.
+   */
   FlipClock.prototype._place = function () {
-    var s = this.host.style, o = this.opts, p = o.position;
+    var host = this.host, s = host.style, o = this.opts, p = o.position;
+    var imp = function (k, v) { s.setProperty(k, v, 'important'); };
     s.cssText = '';
-    if (!p) return;
-    var off = o.offset + 'px';
-    s.position = 'fixed';
-    s.zIndex = '2147483000';
-    s.width = 'max-content';
-    s.maxWidth = 'calc(100vw - ' + (o.offset * 2) + 'px)';
-    if (p.indexOf('top') === 0) s.top = off; else s.bottom = off;
-    if (/left$/.test(p)) s.left = off;
-    else if (/right$/.test(p)) s.right = off;
-    else { s.left = '50%'; s.transform = 'translateX(-50%)'; }
+
+    imp('display', 'block'); imp('margin', '0'); imp('padding', '0');
+    imp('overflow', 'visible'); imp('float', 'none');
+
+    if (!p) {                                   // ikut posisi elemen
+      if (host.parentNode !== this.target) this.target.appendChild(host);
+      imp('position', 'static'); imp('transform', 'none'); imp('max-width', '100%');
+      return;
+    }
+
+    var body = document.body || document.documentElement;
+    if (host.parentNode !== body) body.appendChild(host);
+
+    var off = o.offset, px = off + 'px';
+    imp('position', 'fixed');
+    imp('z-index', '2147483000');
+    imp('width', 'max-content');
+    imp('max-width', 'calc(100vw - ' + (off * 2) + 'px)');
+    imp('top', 'auto'); imp('bottom', 'auto'); imp('left', 'auto'); imp('right', 'auto');
+    imp('transform', 'none');
+
+    var vert = p.indexOf('top') === 0 ? 'top' : 'bottom';
+    imp(vert, px);
+    imp(vert, 'calc(' + px + ' + env(safe-area-inset-' + vert + ', 0px))');   // aman untuk notch / home bar
+
+    if (/left$/.test(p)) imp('left', px);
+    else if (/right$/.test(p)) imp('right', px);
+    else { imp('left', '50%'); imp('transform', 'translateX(-50%)'); }
+  };
+
+  /** Lebar yang tersedia untuk jam (di luar padding milik container). */
+  FlipClock.prototype._avail = function () {
+    var o = this.opts;
+    if (o.position) return window.innerWidth - o.offset * 2;
+    var t = this.target, w = t.clientWidth;
+    if (!w) return 0;
+    var cs = window.getComputedStyle(t);
+    return w - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
   };
 
   FlipClock.prototype._fit = function () {
     var o = this.opts;
+    if (this._dead || !this.clock) return;
     this.clock.style.setProperty('--h', o.size + 'px');
     if (!o.fit) return;
-    var avail = o.position ? window.innerWidth - o.offset * 2 : this.target.clientWidth;
-    if (!avail) return;
+    var avail = this._avail();
+    if (avail <= 0) return;
     var w = this.row.getBoundingClientRect().width;
     if (this.dateEl) w = Math.max(w, this.dateEl.getBoundingClientRect().width);
     if (this.creditEl) w = Math.max(w, this.creditEl.getBoundingClientRect().width);
@@ -404,7 +454,14 @@
     if (d.seconds) { d.seconds[0].set(sec[0], animate); d.seconds[1].set(sec[1], animate); }
 
     if (this.ampmEl) this.ampmEl.textContent = h24 >= 12 ? 'PM' : 'AM';
-    if (this.dateEl) this.dateEl.textContent = dateText(this.dfmt, o.dateFormat, now);
+    if (this.dateEl) {
+      var dt = dateText(this.dfmt, o.dateFormat, now);
+      if (dt !== this._dt) {
+        this._dt = dt;
+        this.dateEl.textContent = dt;
+        if (this._ready) this._fit();     // teks tanggal berubah (ganti hari), ukur ulang
+      }
+    }
   };
 
   FlipClock.prototype._schedule = function () {
@@ -425,21 +482,22 @@
       if (all[k]) all[k].forEach(function (x) { x.destroy(); });
     });
     this._build();
-    this._render(false);
     return this;
   };
 
   /** Hapus widget dari halaman. */
   FlipClock.prototype.destroy = function () {
+    this._dead = true;
     clearTimeout(this.timeout);
     if (this.ro) this.ro.disconnect();
     window.removeEventListener('resize', this._onResize);
+    if (document.fonts && document.fonts.removeEventListener) document.fonts.removeEventListener('loadingdone', this._onFonts);
     var all = this.digits;
     ['hours', 'minutes', 'seconds'].forEach(function (k) {
       if (all[k]) all[k].forEach(function (x) { x.destroy(); });
     });
     if (this.host.parentNode) this.host.parentNode.removeChild(this.host);
-    if (this.target.__fsc === this) delete this.target.__fsc;
+    if (this.target.__fsc === this) { this.target.__fsc = null; this.target.__fscOff = true; }
   };
 
   /* ------------------------------------------------------------------ */
@@ -507,21 +565,31 @@
 
   function autoInit(root) {
     (root || document).querySelectorAll('[data-fixs-flipclock]').forEach(function (n) {
-      if (n.__fsc) return;
-      n.__fsc = new FlipClock(n, fromData(n));
+      if (n.__fsc || n.__fscOff) return;
+      new FlipClock(n, fromData(n));
     });
   }
 
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { autoInit(); });
     else autoInit();
+
+    // elemen [data-fixs-flipclock] yang baru muncul belakangan (SPA, builder, popup, footer yang di-inject)
+    if (typeof MutationObserver !== 'undefined') {
+      var queued = false;
+      new MutationObserver(function () {
+        if (queued) return;
+        queued = true;
+        (window.requestAnimationFrame || setTimeout)(function () { queued = false; autoInit(); });
+      }).observe(document.documentElement, { childList: true, subtree: true });
+    }
   }
 
   /* ------------------------------------------------------------------ */
   /*  API publik                                                         */
   /* ------------------------------------------------------------------ */
   var API = {
-    version: '1.0.0',
+    version: '1.0.1',
     themes: THEMES,
     defaults: DEFAULTS,
     create: function (target, options) { return new FlipClock(target, options); },
