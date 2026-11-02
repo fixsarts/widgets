@@ -1,5 +1,5 @@
 /*!
- * Fixs Flip Clock v1.0.0
+ * Fixs Flip Clock v1.1.0
  * Widget jam flip tanpa dependensi, bisa dipasang di website mana pun.
  * ©fixsarts.studio
  *
@@ -24,7 +24,8 @@
       divider: '#000000',
       label: '#b5b5b5',
       date: '#a8a8a8',
-      credit: '#6b6b6b'
+      credit: '#6b6b6b',
+      border: '#3a3a3a'
     },
     light: {
       background: '#ffffff',
@@ -33,7 +34,8 @@
       divider: '#ffffff',
       label: '#555555',
       date: '#666666',
-      credit: '#222222'
+      credit: '#222222',
+      border: '#c4c4c4'
     }
   };
 
@@ -56,10 +58,27 @@
     fit: true,              // otomatis mengecil jika container sempit
     timezone: null,         // contoh: 'Asia/Makassar' (null = zona waktu perangkat)
     locale: 'en-US',        // bahasa untuk tanggal, contoh: 'id-ID'
+    dateFormat: {           // format tanggal, contoh hasil (id-ID): Senin, 02 Nov 2026
+      weekday: 'long',      //   'long' (Senin) | 'short' (Sen) | false
+      day: '2-digit',       //   '2-digit' (02) | 'numeric' (2) | false
+      month: 'short',       //   'short' (Nov) | 'long' (November) | '2-digit' (11) | 'numeric' (11) | false
+      year: 'numeric',      //   'numeric' (2026) | '2-digit' (26) | false
+      comma: true,          //   koma setelah nama hari
+      uppercase: false      //   HURUF BESAR
+    },
+    gapDigit: null,         // jarak antar kartu dalam satu pasang angka (px pada ukuran `size`), null = otomatis
+    gapGroup: null,         // jarak antar pasangan jam / menit / detik (px), null = otomatis
+    gapDate: null,          // jarak antara jam dengan tanggal & credit (px), null = otomatis
     credit: true,           // tulisan ©fixsarts.studio
     radius: 14,             // lengkung sudut kartu (px)
     align: 'center',        // 'left' | 'center' | 'right' (posisi jam di dalam container)
     padding: true,          // false = tanpa padding luar (cocok untuk navbar / footer)
+    padX: null,             // jarak kiri-kanan isi jam ke tepi shape (px). null = otomatis
+    padY: null,             // jarak atas-bawah isi jam ke tepi shape (px). null = otomatis
+    shadow: false,          // bayangan di sekeliling shape
+    border: false,          // garis tepi shape (warna: colors.border)
+    blinkColon: false,      // titik dua berkedip tiap detik (jika separator = 'colon')
+    secondsBar: false,      // garis progres detik di bawah jam
     transparent: false,     // true = latar widget transparan (ikut warna website)
     position: null,         // null = ikut posisi elemen | 'top-left' | 'top-center' | 'top-right'
                             //   | 'bottom-left' | 'bottom-center' | 'bottom-right' (melayang/fixed)
@@ -95,21 +114,32 @@
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
-  /* ---- format tanggal (tetap): Senin, 02 Nov 2026 ---- */
+  /* ---- format tanggal ---- */
+  function hasDate(f) { return !!(f.weekday || f.day || f.month || f.year); }
+
   function makeDateFmt(o) {
     function opts(tz) {
-      var r = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' };
+      var f = o.dateFormat, r = {};
       if (tz) r.timeZone = tz;
+      if (f.weekday) r.weekday = f.weekday;
+      if (f.day) r.day = f.day;
+      if (f.month) r.month = f.month;
+      if (f.year) r.year = f.year;
       return r;
     }
     try { return new Intl.DateTimeFormat(o.locale, opts(o.timezone || undefined)); }
     catch (e) { return new Intl.DateTimeFormat('en-US', opts()); }
   }
 
-  function dateText(dfmt, now) {
+  function dateText(dfmt, f, now) {
+    if (!hasDate(f)) return '';
     var p = {};
     dfmt.formatToParts(now).forEach(function (x) { p[x.type] = x.value; });
-    return p.weekday + ', ' + [p.day, p.month, p.year].join(' ');
+    var numMonth = f.month === 'numeric' || f.month === '2-digit';
+    var nums = [f.day && p.day, f.month && p.month, f.year && p.year].filter(Boolean);
+    var s = nums.join(numMonth ? '/' : ' ');
+    if (f.weekday && p.weekday) s = s ? p.weekday + (f.comma ? ', ' : ' ') + s : p.weekday;
+    return f.uppercase ? s.toUpperCase() : s;
   }
 
   function loadFont() {
@@ -125,17 +155,23 @@
   /*  CSS (hidup di dalam Shadow DOM, jadi tidak bentrok dengan website) */
   /* ------------------------------------------------------------------ */
   var CSS = [
-    ':host{display:block}',
+    ':host{all:initial;display:block}',
     '*{box-sizing:border-box;margin:0;padding:0}',
     '.clock{--h:160px;--d:.3s;',
     '  display:flex;flex-direction:column;align-items:var(--ai,center);justify-content:center;',
-    '  gap:calc(var(--h)*.17);width:100%;',
+    '  gap:calc(var(--h)*var(--gt,.17));width:100%;',
     '  padding:calc(var(--h)*.2) calc(var(--h)*.12) calc(var(--h)*.1);',
     '  background:var(--bg);color:var(--text);border-radius:var(--r);user-select:none}',
-    '.row{display:flex;align-items:center;gap:calc(var(--h)*.2)}',
-    '.group{display:flex;gap:calc(var(--h)*.06)}',
-    '.sep{display:flex;flex-direction:column;gap:calc(var(--h)*.14);margin:0 calc(var(--h)*-.06)}',
+    '.row{display:flex;align-items:center;gap:calc(var(--h)*var(--gg,.2))}',
+    '.group{display:flex;gap:calc(var(--h)*var(--gd,.06))}',
+    '.sep{display:flex;flex-direction:column;gap:calc(var(--h)*.14);margin:0 calc(var(--h)*var(--gg,.2)*-.3)}',
     '.sep i{display:block;width:calc(var(--h)*.055);height:calc(var(--h)*.055);border-radius:50%;background:var(--text);opacity:.85}',
+
+    '.rw{display:flex;flex-direction:column;align-items:stretch;gap:calc(var(--h)*.12)}',
+    '.bar{height:max(2px,calc(var(--h)*.028));border-radius:99px;background:rgba(128,128,128,.28);overflow:hidden}',
+    '.bar b{display:block;height:100%;width:0;border-radius:99px;background:var(--text);opacity:.85;transition:width 1s linear}',
+    '.blink .sep i{animation:fsc-blink 1s steps(1,end) infinite}',
+    '@keyframes fsc-blink{50%{opacity:.12}}',
 
     /* kartu */
     '.card{position:relative;width:calc(var(--h)*.64);height:var(--h);',
@@ -172,6 +208,7 @@
     '.date{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;font-weight:400;',
     '  font-size:calc(var(--h)*.17);letter-spacing:.04em;word-spacing:.1em;color:var(--date);',
     '  text-align:var(--ta,center);white-space:nowrap}',
+    '.date.upper{letter-spacing:.2em;word-spacing:.45em}',
     '.credit{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;',
     '  font-size:max(9px,calc(var(--h)*.065));letter-spacing:.04em;color:var(--credit);text-align:var(--ta,center)}',
     '@media (prefers-reduced-motion:reduce){.card.flipping .flip-top,.card.flipping .flip-bottom{animation-duration:.01s}}'
@@ -239,6 +276,7 @@
 
     if (t.__fsc && t.__fsc !== this) t.__fsc.destroy();   // cegah dobel di satu elemen
     t.__fsc = this;
+    t.__fscOff = false;
 
     this.target = t;
     this.opts = merge(DEFAULTS, options || {});
@@ -257,6 +295,12 @@
     this._onResize = function () { self._fit(); };
     window.addEventListener('resize', this._onResize);
 
+    // ukur ulang setelah font (Oswald/Roboto) selesai dimuat, karena lebar teks berubah
+    this._onFonts = function () { self._fit(); };
+    if (document.fonts) {
+      if (document.fonts.ready) document.fonts.ready.then(this._onFonts);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', this._onFonts);
+    }
   }
 
   FlipClock.prototype._formatters = function () {
@@ -275,6 +319,7 @@
   FlipClock.prototype._build = function () {
     var o = this.opts, show = o.show, self = this;
 
+    this._ready = false;
     if (o.loadFont) loadFont();
     this._formatters();
 
@@ -298,9 +343,21 @@
     clock.style.setProperty('--ta', o.align === 'left' || o.align === 'right' ? o.align : 'center');
     if (o.transparent) clock.style.setProperty('--bg', 'transparent');
     if (!o.padding) clock.style.padding = '0';
+    if (o.padX != null || o.padY != null) {
+      var px = o.padX != null ? o.padX : o.size * 0.12, py = o.padY != null ? o.padY : o.size * 0.15;
+      clock.style.padding = py + 'px ' + px + 'px';
+    }
+    clock.style.setProperty('--border', c.border || c.card);
+    if (o.shadow) clock.style.boxShadow = '0 10px 34px rgba(0,0,0,.32), 0 2px 8px rgba(0,0,0,.18)';
+    if (o.border) clock.style.border = Math.max(1, Math.round(o.size * 0.02)) + 'px solid var(--border)';
+    if (o.blinkColon) clock.classList.add('blink');
+    if (o.gapDigit != null) clock.style.setProperty('--gd', o.gapDigit / o.size);
+    if (o.gapGroup != null) clock.style.setProperty('--gg', o.gapGroup / o.size);
+    if (o.gapDate != null) clock.style.setProperty('--gt', o.gapDate / o.size);
     this._place();
 
-    var row = this.row = el('div', 'row', clock);
+    var wrap = el('div', 'rw', clock);
+    var row = this.row = el('div', 'row', wrap);
     var dur = o.flipDuration;
     this.digits = { hours: null, minutes: null, seconds: null };
 
@@ -316,36 +373,78 @@
       first = false;
     });
 
+    this.bar = null;
+    if (o.secondsBar) {
+      this.bar = el('div', 'bar', wrap);
+      this.barFill = el('b', null, this.bar);
+    }
+
     // label AM/PM di kartu pertama jam
     this.ampmEl = null;
     if (this.digits.hours && o.hour12 && show.ampm) {
       this.ampmEl = el('div', 'ampm', this.digits.hours[0].el);
     }
 
-    this.dateEl = show.date ? el('div', 'date', clock) : null;
+    this.dateEl = (show.date && hasDate(o.dateFormat))
+      ? el('div', 'date' + (o.dateFormat.uppercase ? ' upper' : ''), clock) : null;
     this.creditEl = o.credit ? el('div', 'credit', clock) : null;
     if (this.creditEl) this.creditEl.textContent = '\u00A9fixsarts.studio';
 
+    this._dt = null;
+    this._render(false);   // isi angka & tanggal dulu supaya lebar tanggal ikut terukur
+    this._ready = true;
     this._fit();
-    this._render(false);
   };
 
-  /** Penempatan host: ikut posisi elemen, atau melayang (position: fixed) di pojok layar. */
+  /**
+   * Penempatan host.
+   * - Mode melayang: host dipindah ke <body> supaya `position: fixed` selalu relatif ke layar.
+   *   Kalau tetap di dalam footer/section, ancestor yang punya transform / filter / backdrop-filter /
+   *   contain / will-change akan "menyandera" fixed sehingga jam ikut posisi ancestor (bug "nyangkut di footer").
+   * - Semua properti kritis dipasang inline + !important agar tidak ditimpa CSS website.
+   */
   FlipClock.prototype._place = function () {
-    var s = this.host.style, o = this.opts, p = o.position;
+    var host = this.host, s = host.style, o = this.opts, p = o.position;
+    var imp = function (k, v) { s.setProperty(k, v, 'important'); };
     s.cssText = '';
-    if (!p) return;
 
-    var px = o.offset + 'px';
-    s.position = 'fixed';
-    s.zIndex = '2147483000';
-    s.width = 'max-content';
-    s.maxWidth = 'calc(100vw - ' + (o.offset * 2) + 'px)';
-    s[p.indexOf('top') === 0 ? 'top' : 'bottom'] = px;
+    imp('display', 'block'); imp('margin', '0'); imp('padding', '0');
+    imp('overflow', 'visible'); imp('float', 'none');
 
-    if (/left$/.test(p)) s.left = px;
-    else if (/right$/.test(p)) s.right = px;
-    else { s.left = '50%'; s.transform = 'translateX(-50%)'; }
+    if (!p) {                                   // ikut posisi elemen
+      if (host.parentNode !== this.target) this.target.appendChild(host);
+      imp('position', 'static'); imp('transform', 'none'); imp('max-width', '100%');
+      return;
+    }
+
+    var body = document.body || document.documentElement;
+    if (host.parentNode !== body) body.appendChild(host);
+
+    var off = o.offset, px = off + 'px';
+    imp('position', 'fixed');
+    imp('z-index', '2147483000');
+    imp('width', 'max-content');
+    imp('max-width', 'calc(100vw - ' + (off * 2) + 'px)');
+    imp('top', 'auto'); imp('bottom', 'auto'); imp('left', 'auto'); imp('right', 'auto');
+    imp('transform', 'none');
+
+    var vert = p.indexOf('top') === 0 ? 'top' : 'bottom';
+    imp(vert, px);
+    imp(vert, 'calc(' + px + ' + env(safe-area-inset-' + vert + ', 0px))');   // aman untuk notch / home bar
+
+    if (/left$/.test(p)) imp('left', px);
+    else if (/right$/.test(p)) imp('right', px);
+    else { imp('left', '50%'); imp('transform', 'translateX(-50%)'); }
+  };
+
+  /** Lebar yang tersedia untuk jam (di luar padding milik container). */
+  FlipClock.prototype._avail = function () {
+    var o = this.opts;
+    if (o.position) return window.innerWidth - o.offset * 2;
+    var t = this.target, w = t.clientWidth;
+    if (!w) return 0;
+    var cs = window.getComputedStyle(t);
+    return w - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
   };
 
   FlipClock.prototype._fit = function () {
@@ -353,12 +452,13 @@
     if (this._dead || !this.clock) return;
     this.clock.style.setProperty('--h', o.size + 'px');
     if (!o.fit) return;
-    var avail = o.position ? window.innerWidth - o.offset * 2 : this.target.clientWidth;
+    var avail = this._avail();
     if (avail <= 0) return;
     var w = this.row.getBoundingClientRect().width;
     if (this.dateEl) w = Math.max(w, this.dateEl.getBoundingClientRect().width);
     if (this.creditEl) w = Math.max(w, this.creditEl.getBoundingClientRect().width);
-    var natural = w + (o.padding ? o.size * 0.24 : 0);
+    var padW = (o.padX != null || o.padY != null) ? (o.padX != null ? o.padX : o.size * 0.12) * 2 : (o.padding ? o.size * 0.24 : 0);
+    var natural = w + padW;
     if (natural > avail) {
       this.clock.style.setProperty('--h', Math.max(24, o.size * avail / natural) + 'px');
     }
@@ -383,8 +483,20 @@
     if (d.minutes) { d.minutes[0].set(min[0], animate); d.minutes[1].set(min[1], animate); }
     if (d.seconds) { d.seconds[0].set(sec[0], animate); d.seconds[1].set(sec[1], animate); }
 
+    if (this.barFill) {
+      var sn = parseInt(sec, 10), f = this.barFill;
+      if (sn === 0) { f.style.transition = 'none'; f.style.width = '0%'; void f.offsetWidth; f.style.transition = ''; }
+      f.style.width = ((sn + 1) / 60 * 100) + '%';
+    }
     if (this.ampmEl) this.ampmEl.textContent = h24 >= 12 ? 'PM' : 'AM';
-    if (this.dateEl) this.dateEl.textContent = dateText(this.dfmt, now);
+    if (this.dateEl) {
+      var dt = dateText(this.dfmt, o.dateFormat, now);
+      if (dt !== this._dt) {
+        this._dt = dt;
+        this.dateEl.textContent = dt;
+        if (this._ready) this._fit();     // teks tanggal berubah (ganti hari), ukur ulang
+      }
+    }
   };
 
   FlipClock.prototype._schedule = function () {
@@ -400,6 +512,7 @@
   /** Ubah konfigurasi saat berjalan. Contoh: clock.update({ theme: 'light' }) */
   FlipClock.prototype.update = function (opts) {
     this.opts = merge(this.opts, opts || {});
+    if (opts && isObj(opts.colors)) this.opts.colors = merge({}, opts.colors);   // colors selalu diganti total
     var all = this.digits;
     ['hours', 'minutes', 'seconds'].forEach(function (k) {
       if (all[k]) all[k].forEach(function (x) { x.destroy(); });
@@ -414,12 +527,13 @@
     clearTimeout(this.timeout);
     if (this.ro) this.ro.disconnect();
     window.removeEventListener('resize', this._onResize);
+    if (document.fonts && document.fonts.removeEventListener) document.fonts.removeEventListener('loadingdone', this._onFonts);
     var all = this.digits;
     ['hours', 'minutes', 'seconds'].forEach(function (k) {
       if (all[k]) all[k].forEach(function (x) { x.destroy(); });
     });
     if (this.host.parentNode) this.host.parentNode.removeChild(this.host);
-    if (this.target.__fsc === this) this.target.__fsc = null;
+    if (this.target.__fsc === this) { this.target.__fsc = null; this.target.__fscOff = true; }
   };
 
   /* ------------------------------------------------------------------ */
@@ -453,9 +567,31 @@
     if (d.radius) o.radius = parseFloat(d.radius);
     if (d.align) o.align = d.align;
     if (d.padding !== undefined) o.padding = bool(d.padding);
+    if (d.padX !== undefined) o.padX = parseFloat(d.padX);
+    if (d.padY !== undefined) o.padY = parseFloat(d.padY);
+    if (d.shadow !== undefined) o.shadow = bool(d.shadow);
+    if (d.border !== undefined) o.border = bool(d.border);
+    if (d.blinkColon !== undefined) o.blinkColon = bool(d.blinkColon);
+    if (d.secondsBar !== undefined) o.secondsBar = bool(d.secondsBar);
     if (d.transparent !== undefined) o.transparent = bool(d.transparent);
     if (d.position) o.position = d.position;
     if (d.offset) o.offset = parseFloat(d.offset);
+
+    // format tanggal: data-date-weekday / -day / -month / -year (nilai "false" = sembunyikan)
+    var fv = function (v) { return (v === 'false' || v === 'none' || v === 'off') ? false : v; };
+    var df = {};
+    if (d.dateWeekday !== undefined) df.weekday = fv(d.dateWeekday);
+    if (d.dateDay !== undefined) df.day = fv(d.dateDay);
+    if (d.dateMonth !== undefined) df.month = fv(d.dateMonth);
+    if (d.dateYear !== undefined) df.year = fv(d.dateYear);
+    if (d.dateComma !== undefined) df.comma = bool(d.dateComma);
+    if (d.dateUppercase !== undefined) df.uppercase = bool(d.dateUppercase);
+    if (Object.keys(df).length) o.dateFormat = df;
+
+    // jarak (px): data-gap-digit / data-gap-group / data-gap-date
+    if (d.gapDigit !== undefined) o.gapDigit = parseFloat(d.gapDigit);
+    if (d.gapGroup !== undefined) o.gapGroup = parseFloat(d.gapGroup);
+    if (d.gapDate !== undefined) o.gapDate = parseFloat(d.gapDate);
 
     var colors = {};
     if (d.bg) colors.background = d.bg;
@@ -465,13 +601,14 @@
     if (d.label) colors.label = d.label;
     if (d.dateColor) colors.date = d.dateColor;
     if (d.creditColor) colors.credit = d.creditColor;
+    if (d.borderColor) colors.border = d.borderColor;
     if (Object.keys(colors).length) o.colors = colors;
     return o;
   }
 
   function autoInit(root) {
     (root || document).querySelectorAll('[data-fixs-flipclock]').forEach(function (n) {
-      if (n.__fsc) return;
+      if (n.__fsc || n.__fscOff) return;
       new FlipClock(n, fromData(n));
     });
   }
@@ -480,19 +617,54 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { autoInit(); });
     else autoInit();
 
+    // elemen [data-fixs-flipclock] yang baru muncul belakangan (SPA, builder, popup, footer yang di-inject)
+    if (typeof MutationObserver !== 'undefined') {
+      var queued = false;
+      new MutationObserver(function () {
+        if (queued) return;
+        queued = true;
+        (window.requestAnimationFrame || setTimeout)(function () { queued = false; autoInit(); });
+      }).observe(document.documentElement, { childList: true, subtree: true });
+    }
   }
 
   /* ------------------------------------------------------------------ */
   /*  API publik                                                         */
   /* ------------------------------------------------------------------ */
   var API = {
-    version: '1.0.0',
+    version: '1.1.0',
     themes: THEMES,
     defaults: DEFAULTS,
     create: function (target, options) { return new FlipClock(target, options); },
-    init: autoInit
+    /** Hasil teks tanggal untuk opsi tertentu, contoh: FixsFlipClock.formatDate(new Date(), { locale: 'id-ID' }) */
+    formatDate: function (date, options) {
+      var o = merge(DEFAULTS, options || {});
+      return dateText(makeDateFmt(o), o.dateFormat, date || new Date());
+    },
+    init: autoInit,
+    /** Diagnosa: ketik FixsFlipClock.debug() di Console (F12) untuk lihat kondisi jam di halaman. */
+    debug: function () {
+      var out = [];
+      document.querySelectorAll('.fixs-flipclock-host').forEach(function (h) {
+        var r = h.getBoundingClientRect(), cs = window.getComputedStyle(h);
+        var d = h.shadowRoot && h.shadowRoot.querySelector('.date');
+        out.push({
+          version: API.version,
+          parent: h.parentNode.tagName + (h.parentNode.id ? '#' + h.parentNode.id : ''),
+          position: cs.position,
+          rect: { top: Math.round(r.top), left: Math.round(r.left), width: Math.round(r.width), height: Math.round(r.height) },
+          viewport: { w: window.innerWidth, h: window.innerHeight },
+          date: d ? d.textContent : '(tanpa tanggal)',
+          dateWidth: d ? Math.round(d.getBoundingClientRect().width) : 0
+        });
+      });
+      console.log('[Fixs Flip Clock] v' + API.version + ', jumlah jam: ' + out.length);
+      console.log(JSON.stringify(out, null, 2));
+      return out;
+    }
   };
 
+  if (typeof console !== 'undefined' && console.info) console.info('[Fixs Flip Clock] v' + API.version + ' aktif');
   if (typeof module === 'object' && module.exports) module.exports = API;
   global.FixsFlipClock = API;
 })(typeof window !== 'undefined' ? window : this);

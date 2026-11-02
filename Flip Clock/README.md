@@ -9,7 +9,7 @@ Widget jam flip untuk website mana pun. Satu file JavaScript, tanpa dependensi, 
 
 ## Demo
 
-Pasang `flip-clock.js` lalu coba contoh penempatan di bawah.
+Buka `demo.html` (butuh `flip-clock.js` di folder yang sama) untuk melihat semua varian dan playground konfigurasi.
 
 ## Cara pasang
 
@@ -20,7 +20,7 @@ Pasang `flip-clock.js` lalu coba contoh penempatan di bawah.
 <div data-fixs-flipclock data-theme="dark"></div>
 ```
 
-`@main` selalu mengikuti file terbaru di branch `main`, jadi setiap update otomatis terpakai tanpa mengubah link. Untuk mengunci versi, ganti `@main` dengan tag/release, misalnya `@v1.0.0`.
+Untuk produksi, disarankan mengunci versi dengan tag/release, misalnya `@v1.0.0` menggantikan `@main`, supaya tampilan tidak berubah saat ada update.
 
 ### 2. File lokal
 
@@ -65,6 +65,12 @@ Unduh `flip-clock.js`, simpan di proyek kamu, lalu:
 | `timezone` | `data-timezone` | perangkat | Contoh `Asia/Makassar` |
 | `locale` | `data-locale` | `en-US` | Bahasa tanggal, contoh `id-ID` |
 | `radius` | `data-radius` | `14` | Lengkung sudut kartu (px) |
+| `padX` | `data-pad-x` | `null` | Jarak isi jam ke tepi shape, kiri-kanan (px). Kosong = otomatis |
+| `padY` | `data-pad-y` | `null` | Jarak isi jam ke tepi shape, atas-bawah (px). Kosong = otomatis |
+| `shadow` | `data-shadow` | `false` | Bayangan di sekeliling shape (true/false) |
+| `border` | `data-border` | `false` | Garis tepi shape; warna lewat data-border-color |
+| `blinkColon` | `data-blink-colon` | `false` | Titik dua berkedip tiap detik (butuh separator colon) |
+| `secondsBar` | `data-seconds-bar` | `false` | Bar progres detik di bawah jam |
 | `align` | `data-align` | `center` | `left`, `center`, `right` |
 | `padding` | `data-padding` | `true` | `false` = tanpa padding luar (navbar/footer) |
 | `transparent` | `data-transparent` | `false` | Latar transparan, ikut warna website |
@@ -119,6 +125,8 @@ Nama class wrapper bebas, tidak berpengaruh ke widget. Yang wajib hanya atribut 
      data-hour12="false" data-size="70" data-position="bottom-right"></div>
 ```
 
+Semua contoh ini bisa dicoba dan diatur langsung di `demo.html`.
+
 ### Contoh warna custom
 
 ```html
@@ -129,20 +137,35 @@ Nama class wrapper bebas, tidak berpengaruh ke widget. Yang wajib hanya atribut 
 
 ## Troubleshooting
 
+- **Jam melayang malah ikut ke footer / tidak di pojok layar**: sudah diperbaiki di v1.0.1 (host dipindah ke `<body>`). Pastikan memakai file terbaru, bukan salinan lama di CDN/cache.
 - **Jam melayang menimpa widget lain (misal musik) di pojok yang sama**: pilih pojok berbeda via `data-position`, atau atur `data-offset` supaya ada jarak.
-- **Elemen jam ditambahkan setelah halaman selesai dimuat**: panggil `FixsFlipClock.init()` secara manual.
-- Setelah update file, lakukan hard refresh (Ctrl+Shift+R). Link CDN `@main` bisa tersimpan di cache hingga beberapa jam.
+- **Bagian tanggal/Tahun terpotong**: pastikan `data-fit` tidak diset `false`, dan container tidak lebih sempit dari jamnya. Sejak v1.0.1 padding container ikut dihitung.
+- **Elemen jam baru muncul belakangan (SPA, popup, builder)**: sejak v1.0.1 otomatis terdeteksi. Untuk cara manual: `FixsFlipClock.init()`.
+- Setelah update file, lakukan hard refresh (Ctrl+Shift+R). Link CDN `@main` bisa tersimpan di cache hingga beberapa jam; gunakan tag versi (`@v1.0.1`) agar pasti.
 
 ## Changelog
 
-**v1.0.0**
-- Rilis awal.
+**v1.1.0**
+- Baru: `padX` / `padY` untuk mengatur jarak isi jam ke tepi shape.
+- Baru (semua bisa on/off, default mati): `shadow`, `border`, `blinkColon`, `secondsBar`.
+- Perbaikan: `update()` kini mengganti `colors` secara total, jadi reset warna benar-benar bekerja.
+- Demo: preview selalu dibuat ulang dari pengaturan (sinkron), kontrol shape/efek baru, tampilan dirapikan.
+
+**v1.0.2**
+- Baru: pesan versi di Console (F12) dan `FixsFlipClock.debug()` untuk cek versi yang termuat dan kondisi jam.
+
+**v1.0.1**
+- Fix: mode melayang kini dipindah ke `<body>` + gaya `!important`, sehingga tidak "tersandera" ancestor ber-`transform`/`filter`/`backdrop-filter`/`contain` atau CSS website.
+- Fix: auto-fit memakai lebar konten container (padding dikurangi), sehingga jam/tanggal tidak meluber dan Tahun tidak terpotong.
+- Fix: lebar tanggal diukur setelah teks terisi, dan diukur ulang saat font selesai dimuat atau tanggal berganti.
+- Baru: elemen `data-fixs-flipclock` yang ditambahkan belakangan terdeteksi otomatis; posisi melayang memperhitungkan safe-area (notch/home bar); `:host` diisolasi dari style turunan website.
 
 ## Struktur folder
 
 ```
 Flip Clock/
 ├── flip-clock.js   # widget
+├── demo.html       # demo & playground
 └── README.md
 ```
 
