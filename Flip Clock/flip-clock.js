@@ -1,5 +1,5 @@
 /*!
- * Fixs Flip Clock v1.0.1
+ * Fixs Flip Clock v1.0.2
  * Widget jam flip tanpa dependensi, bisa dipasang di website mana pun.
  * ©fixsarts.studio
  *
@@ -589,7 +589,7 @@
   /*  API publik                                                         */
   /* ------------------------------------------------------------------ */
   var API = {
-    version: '1.0.1',
+    version: '1.0.2',
     themes: THEMES,
     defaults: DEFAULTS,
     create: function (target, options) { return new FlipClock(target, options); },
@@ -598,9 +598,30 @@
       var o = merge(DEFAULTS, options || {});
       return dateText(makeDateFmt(o), o.dateFormat, date || new Date());
     },
-    init: autoInit
+    init: autoInit,
+    /** Diagnosa: ketik FixsFlipClock.debug() di Console (F12) untuk lihat kondisi jam di halaman. */
+    debug: function () {
+      var out = [];
+      document.querySelectorAll('.fixs-flipclock-host').forEach(function (h) {
+        var r = h.getBoundingClientRect(), cs = window.getComputedStyle(h);
+        var d = h.shadowRoot && h.shadowRoot.querySelector('.date');
+        out.push({
+          version: API.version,
+          parent: h.parentNode.tagName + (h.parentNode.id ? '#' + h.parentNode.id : ''),
+          position: cs.position,
+          rect: { top: Math.round(r.top), left: Math.round(r.left), width: Math.round(r.width), height: Math.round(r.height) },
+          viewport: { w: window.innerWidth, h: window.innerHeight },
+          date: d ? d.textContent : '(tanpa tanggal)',
+          dateWidth: d ? Math.round(d.getBoundingClientRect().width) : 0
+        });
+      });
+      console.log('[Fixs Flip Clock] v' + API.version + ', jumlah jam: ' + out.length);
+      console.log(JSON.stringify(out, null, 2));
+      return out;
+    }
   };
 
+  if (typeof console !== 'undefined' && console.info) console.info('[Fixs Flip Clock] v' + API.version + ' aktif');
   if (typeof module === 'object' && module.exports) module.exports = API;
   global.FixsFlipClock = API;
 })(typeof window !== 'undefined' ? window : this);

@@ -139,6 +139,9 @@ Semua contoh ini bisa dicoba dan diatur langsung di `demo.html`.
 
 ## Changelog
 
+**v1.0.2**
+- Baru: pesan versi di Console (F12) dan `FixsFlipClock.debug()` untuk cek versi yang termuat dan kondisi jam.
+
 **v1.0.1**
 - Fix: mode melayang kini dipindah ke `<body>` + gaya `!important`, sehingga tidak "tersandera" ancestor ber-`transform`/`filter`/`backdrop-filter`/`contain` atau CSS website.
 - Fix: auto-fit memakai lebar konten container (padding dikurangi), sehingga jam/tanggal tidak meluber dan Tahun tidak terpotong.
