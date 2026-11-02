@@ -247,7 +247,29 @@
       </div>
 
       <div class="f">
-        <h3>4. Format &amp; efek</h3>
+        <h3>4. Format tanggal</h3>
+        <div class="chips" style="grid-template-columns:1fr 1fr">
+          <button type="button" data-dfmt="1"></button>
+          <button type="button" data-dfmt="2"></button>
+          <button type="button" data-dfmt="3"></button>
+          <button type="button" data-dfmt="4"></button>
+        </div>
+        <label for="dWeekday">Hari</label>
+        <select id="dWeekday"><option value="long">Panjang</option><option value="short">Pendek</option><option value="">Tidak tampil</option></select>
+        <label for="dDay">Tanggal</label>
+        <select id="dDay"><option value="2-digit">2 digit (02)</option><option value="numeric">Tanpa nol (2)</option><option value="">Tidak tampil</option></select>
+        <label for="dMonth">Bulan</label>
+        <select id="dMonth"><option value="short">Pendek</option><option value="long">Panjang</option><option value="2-digit">Angka 2 digit (02)</option><option value="numeric">Angka (2)</option><option value="">Tidak tampil</option></select>
+        <label for="dYear">Tahun</label>
+        <select id="dYear"><option value="numeric">4 digit (2026)</option><option value="2-digit">2 digit (26)</option><option value="">Tidak tampil</option></select>
+        <div class="checks">
+          <label><input type="checkbox" id="dComma"> Koma setelah hari</label>
+          <label><input type="checkbox" id="dUpper"> HURUF BESAR</label>
+        </div>
+      </div>
+
+      <div class="f">
+        <h3>5. Format jam &amp; efek</h3>
         <div class="checks">
           <label><input type="checkbox" id="hour12"> 12 jam</label>
           <label><input type="checkbox" id="leadingZero"> Angka 0 depan</label>
@@ -257,7 +279,7 @@
       </div>
 
       <div class="f">
-        <h3>5. Tata letak</h3>
+        <h3>6. Tata letak &amp; jarak</h3>
         <div class="checks">
           <label><input type="checkbox" id="padding"> Padding</label>
           <label><input type="checkbox" id="transparent"> Transparan</label>
@@ -266,10 +288,17 @@
         <select id="align"><option value="left">Kiri</option><option value="center">Tengah</option><option value="right">Kanan</option></select>
         <label for="size">Ukuran: <span id="sizeVal">130</span>px</label>
         <input type="range" id="size" min="24" max="220" value="130">
+        <label for="gapDigit">Jarak antar kartu angka: <span id="gapDigitV"></span></label>
+        <input type="range" id="gapDigit" min="0" max="40" value="8">
+        <label for="gapGroup">Jarak jam / menit / detik: <span id="gapGroupV"></span></label>
+        <input type="range" id="gapGroup" min="0" max="100" value="26">
+        <label for="gapDate">Jarak jam ke tanggal: <span id="gapDateV"></span></label>
+        <input type="range" id="gapDate" min="0" max="100" value="22">
+        <button id="gapAuto" type="button">Jarak otomatis</button>
       </div>
 
       <div class="f">
-        <h3>6. Waktu &amp; bahasa</h3>
+        <h3>7. Waktu &amp; bahasa</h3>
         <select id="tz">
           <option value="">Zona waktu perangkat (otomatis)</option>
           <option value="Asia/Jakarta">WIB — Jakarta</option>
@@ -308,6 +337,15 @@
       <tr><td><code>radius</code></td><td><code>data-radius</code></td><td>Lengkung sudut kartu (px)</td></tr>
       <tr><td><code>timezone</code></td><td><code>data-timezone</code></td><td>Contoh <code>Asia/Makassar</code></td></tr>
       <tr><td><code>locale</code></td><td><code>data-locale</code></td><td>Bahasa tanggal, contoh <code>id-ID</code></td></tr>
+      <tr><td><code>dateFormat.weekday</code></td><td><code>data-date-weekday</code></td><td><code>long</code> (Senin), <code>short</code> (Sen), <code>false</code> (sembunyikan)</td></tr>
+      <tr><td><code>dateFormat.day</code></td><td><code>data-date-day</code></td><td><code>2-digit</code> (02), <code>numeric</code> (2), <code>false</code></td></tr>
+      <tr><td><code>dateFormat.month</code></td><td><code>data-date-month</code></td><td><code>short</code> (Nov), <code>long</code> (November), <code>2-digit</code>, <code>numeric</code>, <code>false</code></td></tr>
+      <tr><td><code>dateFormat.year</code></td><td><code>data-date-year</code></td><td><code>numeric</code> (2026), <code>2-digit</code> (26), <code>false</code></td></tr>
+      <tr><td><code>dateFormat.comma</code></td><td><code>data-date-comma</code></td><td>Koma setelah nama hari</td></tr>
+      <tr><td><code>dateFormat.uppercase</code></td><td><code>data-date-uppercase</code></td><td>HURUF BESAR</td></tr>
+      <tr><td><code>gapDigit</code></td><td><code>data-gap-digit</code></td><td>Jarak antar kartu angka (px pada ukuran <code>size</code>), kosong = otomatis</td></tr>
+      <tr><td><code>gapGroup</code></td><td><code>data-gap-group</code></td><td>Jarak antar pasangan jam / menit / detik (px)</td></tr>
+      <tr><td><code>gapDate</code></td><td><code>data-gap-date</code></td><td>Jarak jam ke tanggal &amp; credit (px)</td></tr>
       <tr><td><code>credit</code></td><td><code>data-credit</code></td><td>Tulisan ©fixsarts.studio</td></tr>
     </table>
     <p class="cap" style="margin:12px 0 0">Via JS: <code>const jam = FixsFlipClock.create('#jam', {...})</code>, ubah saat berjalan dengan <code>jam.update({...})</code>, hapus dengan <code>jam.destroy()</code>.</p>
@@ -332,8 +370,10 @@
   /* ---------- Satu sumber data: pengaturan default & preset penempatan ---------- */
   var BASE = {
     theme: 'dark', colors: {}, size: 130, hour12: true, leadingZero: true, flip: true,
-    separator: 'none', credit: true, timezone: null, locale: 'en-US',
+    separator: 'none', credit: true, timezone: null, locale: 'id-ID',
     align: 'center', padding: true, transparent: false, position: null,
+    dateFormat: { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', comma: true, uppercase: false },
+    gapDigit: null, gapGroup: null, gapDate: null,
     show: { hours: true, minutes: true, seconds: true, date: true, ampm: true }
   };
   var PRESETS = {
@@ -391,9 +431,40 @@
     $('#size').value = state.size; $('#sizeVal').textContent = state.size;
     $('#tz').value = state.timezone || '';
     $('#locale').value = state.locale;
+    $('#dWeekday').value = state.dateFormat.weekday || '';
+    $('#dDay').value = state.dateFormat.day || '';
+    $('#dMonth').value = state.dateFormat.month || '';
+    $('#dYear').value = state.dateFormat.year || '';
+    $('#dComma').checked = state.dateFormat.comma;
+    $('#dUpper').checked = state.dateFormat.uppercase;
+    syncGaps();
   }
 
+  /* jarak: nilai otomatis = proporsi bawaan widget x ukuran */
+  var AUTO = { Digit: 0.06, Group: 0.2, Date: 0.17 };
+  function syncGaps() {
+    ['Digit', 'Group', 'Date'].forEach(function (k) {
+      var v = state['gap' + k], shown = v != null ? v : Math.round(AUTO[k] * state.size);
+      $('#gap' + k).value = shown;
+      $('#gap' + k + 'V').textContent = shown + 'px' + (v == null ? ' (auto)' : '');
+    });
+  }
+
+  /* 4 contoh format tanggal (hari + tahun selalu tampil) */
+  var DFMTS = {
+    '1': { day: '2-digit', month: 'short' },
+    '2': { day: '2-digit', month: 'long' },
+    '3': { day: 'numeric', month: 'short' },
+    '4': { day: 'numeric', month: 'long' }
+  };
+  function dfmtOf(id) { return deep({ weekday: 'long', year: 'numeric', comma: true, uppercase: false }, DFMTS[id]); }
+
   function syncMarks() {
+    $$('[data-dfmt]').forEach(function (b) {
+      var t = dfmtOf(b.dataset.dfmt);
+      b.textContent = FixsFlipClock.formatDate(new Date(), { locale: state.locale, timezone: state.timezone, dateFormat: t });
+      b.classList.toggle('on', ['weekday', 'day', 'month', 'year'].every(function (k) { return state.dateFormat[k] === t[k]; }));
+    });
     $$('[data-preset]').forEach(function (b) { b.classList.toggle('on', b.dataset.preset === activePreset); });
     $$('[data-pos]').forEach(function (b) { b.classList.toggle('on', (b.dataset.pos || null) === (state.position || null)); });
     $('#floatNote').hidden = !state.position;
@@ -418,6 +489,18 @@
     if (!s.padding) a.push(['padding', 'false']);
     if (s.transparent) a.push(['transparent', 'true']);
     if (s.position) a.push(['position', s.position]);
+    if (s.show.date) {
+      var f = s.dateFormat;
+      if (f.weekday !== 'long') a.push(['date-weekday', f.weekday || 'false']);
+      if (f.day !== '2-digit') a.push(['date-day', f.day || 'false']);
+      if (f.month !== 'short') a.push(['date-month', f.month || 'false']);
+      if (f.year !== 'numeric') a.push(['date-year', f.year || 'false']);
+      if (!f.comma) a.push(['date-comma', 'false']);
+      if (f.uppercase) a.push(['date-uppercase', 'true']);
+    }
+    if (s.gapDigit != null) a.push(['gap-digit', s.gapDigit]);
+    if (s.gapGroup != null) a.push(['gap-group', s.gapGroup]);
+    if (s.gapDate != null) a.push(['gap-date', s.gapDate]);
     return a;
   }
 
@@ -443,7 +526,11 @@
       if (!s.padding) o.padding = false;
       if (s.transparent) o.transparent = true;
       if (s.position) o.position = s.position;
-      out = '<script src="' + CDN + '"><\/script>\n<div id="jam"></div>\n\n<script>\n  FixsFlipClock.create("#jam", ' +
+      if (s.show.date && JSON.stringify(s.dateFormat) !== JSON.stringify(BASE.dateFormat)) o.dateFormat = s.dateFormat;
+      if (s.gapDigit != null) o.gapDigit = s.gapDigit;
+      if (s.gapGroup != null) o.gapGroup = s.gapGroup;
+      if (s.gapDate != null) o.gapDate = s.gapDate;
+      out ='<script src="' + CDN + '"><\/script>\n<div id="jam"></div>\n\n<script>\n  FixsFlipClock.create("#jam", ' +
         JSON.stringify(o, null, 2).replace(/\n/g, '\n  ') + ');\n<\/script>';
     }
     $('#pcode').textContent = out;
@@ -486,7 +573,29 @@
   $('#padding').onchange = function () { state.padding = this.checked; apply(); };
   $('#transparent').onchange = function () { state.transparent = this.checked; apply(); };
   $('#align').onchange = function () { state.align = this.value; apply(); };
-  $('#size').oninput = function () { state.size = +this.value; $('#sizeVal').textContent = this.value; apply(); };
+  $('#size').oninput = function () { state.size = +this.value; $('#sizeVal').textContent = this.value; syncGaps(); apply(); };
+
+  /* format tanggal */
+  [['#dWeekday', 'weekday'], ['#dDay', 'day'], ['#dMonth', 'month'], ['#dYear', 'year']].forEach(function (p) {
+    $(p[0]).onchange = function () { state.dateFormat[p[1]] = this.value || false; apply(); };
+  });
+  $('#dComma').onchange = function () { state.dateFormat.comma = this.checked; apply(); };
+  $('#dUpper').onchange = function () { state.dateFormat.uppercase = this.checked; apply(); };
+  $$('[data-dfmt]').forEach(function (b) {
+    b.onclick = function () {
+      var t = dfmtOf(b.dataset.dfmt);
+      state.dateFormat.weekday = t.weekday; state.dateFormat.year = t.year;
+      state.dateFormat.day = t.day; state.dateFormat.month = t.month;
+      state.show.date = true;
+      syncControls(); apply();
+    };
+  });
+
+  /* jarak */
+  ['Digit', 'Group', 'Date'].forEach(function (k) {
+    $('#gap' + k).oninput = function () { state['gap' + k] = +this.value; syncGaps(); apply(); };
+  });
+  $('#gapAuto').onclick = function () { state.gapDigit = state.gapGroup = state.gapDate = null; syncGaps(); apply(); };
   $('#tz').onchange = function () { state.timezone = this.value || null; apply(); };
   $('#locale').onchange = function () { state.locale = this.value; apply(); };
 

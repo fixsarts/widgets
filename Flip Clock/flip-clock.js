@@ -56,6 +56,17 @@
     fit: true,              // otomatis mengecil jika container sempit
     timezone: null,         // contoh: 'Asia/Makassar' (null = zona waktu perangkat)
     locale: 'en-US',        // bahasa untuk tanggal, contoh: 'id-ID'
+    dateFormat: {           // format tanggal, contoh hasil (id-ID): Senin, 02 Nov 2026
+      weekday: 'long',      //   'long' (Senin) | 'short' (Sen) | false
+      day: '2-digit',       //   '2-digit' (02) | 'numeric' (2) | false
+      month: 'short',       //   'short' (Nov) | 'long' (November) | '2-digit' (11) | 'numeric' (11) | false
+      year: 'numeric',      //   'numeric' (2026) | '2-digit' (26) | false
+      comma: true,          //   koma setelah nama hari
+      uppercase: false      //   HURUF BESAR
+    },
+    gapDigit: null,         // jarak antar kartu dalam satu pasang angka (px pada ukuran `size`), null = otomatis
+    gapGroup: null,         // jarak antar pasangan jam / menit / detik (px), null = otomatis
+    gapDate: null,          // jarak antara jam dengan tanggal & credit (px), null = otomatis
     credit: true,           // tulisan ©fixsarts.studio
     radius: 14,             // lengkung sudut kartu (px)
     align: 'center',        // 'left' | 'center' | 'right' (posisi jam di dalam container)
@@ -95,6 +106,34 @@
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
+  /* ---- format tanggal ---- */
+  function hasDate(f) { return !!(f.weekday || f.day || f.month || f.year); }
+
+  function makeDateFmt(o) {
+    function opts(tz) {
+      var f = o.dateFormat, r = {};
+      if (tz) r.timeZone = tz;
+      if (f.weekday) r.weekday = f.weekday;
+      if (f.day) r.day = f.day;
+      if (f.month) r.month = f.month;
+      if (f.year) r.year = f.year;
+      return r;
+    }
+    try { return new Intl.DateTimeFormat(o.locale, opts(o.timezone || undefined)); }
+    catch (e) { return new Intl.DateTimeFormat('en-US', opts()); }
+  }
+
+  function dateText(dfmt, f, now) {
+    if (!hasDate(f)) return '';
+    var p = {};
+    dfmt.formatToParts(now).forEach(function (x) { p[x.type] = x.value; });
+    var numMonth = f.month === 'numeric' || f.month === '2-digit';
+    var nums = [f.day && p.day, f.month && p.month, f.year && p.year].filter(Boolean);
+    var s = nums.join(numMonth ? '/' : ' ');
+    if (f.weekday && p.weekday) s = s ? p.weekday + (f.comma ? ', ' : ' ') + s : p.weekday;
+    return f.uppercase ? s.toUpperCase() : s;
+  }
+
   function loadFont() {
     if (document.getElementById('fsc-font')) return;
     var l = document.createElement('link');
@@ -112,12 +151,12 @@
     '*{box-sizing:border-box;margin:0;padding:0}',
     '.clock{--h:160px;--d:.3s;',
     '  display:flex;flex-direction:column;align-items:var(--ai,center);justify-content:center;',
-    '  gap:calc(var(--h)*.17);width:100%;',
+    '  gap:calc(var(--h)*var(--gt,.17));width:100%;',
     '  padding:calc(var(--h)*.2) calc(var(--h)*.12) calc(var(--h)*.1);',
     '  background:var(--bg);color:var(--text);border-radius:var(--r);user-select:none}',
-    '.row{display:flex;align-items:center;gap:calc(var(--h)*.2)}',
-    '.group{display:flex;gap:calc(var(--h)*.06)}',
-    '.sep{display:flex;flex-direction:column;gap:calc(var(--h)*.14);margin:0 calc(var(--h)*-.06)}',
+    '.row{display:flex;align-items:center;gap:calc(var(--h)*var(--gg,.2))}',
+    '.group{display:flex;gap:calc(var(--h)*var(--gd,.06))}',
+    '.sep{display:flex;flex-direction:column;gap:calc(var(--h)*.14);margin:0 calc(var(--h)*var(--gg,.2)*-.3)}',
     '.sep i{display:block;width:calc(var(--h)*.055);height:calc(var(--h)*.055);border-radius:50%;background:var(--text);opacity:.85}',
 
     /* kartu */
@@ -153,8 +192,9 @@
 
     /* tanggal & credit */
     '.date{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;font-weight:400;',
-    '  font-size:calc(var(--h)*.17);letter-spacing:.2em;word-spacing:.45em;color:var(--date);',
-    '  text-transform:uppercase;text-align:var(--ta,center);white-space:nowrap}',
+    '  font-size:calc(var(--h)*.17);letter-spacing:.04em;word-spacing:.1em;color:var(--date);',
+    '  text-align:var(--ta,center);white-space:nowrap}',
+    '.date.upper{letter-spacing:.2em;word-spacing:.45em}',
     '.credit{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;',
     '  font-size:max(9px,calc(var(--h)*.065));letter-spacing:.04em;color:var(--credit);text-align:var(--ta,center)}',
     '@media (prefers-reduced-motion:reduce){.card.flipping .flip-top,.card.flipping .flip-bottom{animation-duration:.01s}}'
@@ -240,20 +280,16 @@
   }
 
   FlipClock.prototype._formatters = function () {
-    var o = this.opts, tz = o.timezone || undefined, f, d;
+    var o = this.opts, tz = o.timezone || undefined, f;
     try {
       f = new Intl.DateTimeFormat('en-US', {
         timeZone: tz, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit'
       });
-      d = new Intl.DateTimeFormat(o.locale, {
-        timeZone: tz, weekday: 'short', month: 'short', day: 'numeric'
-      });
     } catch (e) {
       f = new Intl.DateTimeFormat('en-US', { hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      d = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
     this.fmt = f;
-    this.dfmt = d;
+    this.dfmt = makeDateFmt(o);
   };
 
   FlipClock.prototype._build = function () {
@@ -282,6 +318,9 @@
     clock.style.setProperty('--ta', o.align === 'left' || o.align === 'right' ? o.align : 'center');
     if (o.transparent) clock.style.setProperty('--bg', 'transparent');
     if (!o.padding) clock.style.padding = '0';
+    if (o.gapDigit != null) clock.style.setProperty('--gd', o.gapDigit / o.size);
+    if (o.gapGroup != null) clock.style.setProperty('--gg', o.gapGroup / o.size);
+    if (o.gapDate != null) clock.style.setProperty('--gt', o.gapDate / o.size);
     this._place();
 
     var row = this.row = el('div', 'row', clock);
@@ -306,7 +345,8 @@
       this.ampmEl = el('div', 'ampm', this.digits.hours[0].el);
     }
 
-    this.dateEl = show.date ? el('div', 'date', clock) : null;
+    this.dateEl = (show.date && hasDate(o.dateFormat))
+      ? el('div', 'date' + (o.dateFormat.uppercase ? ' upper' : ''), clock) : null;
     this.creditEl = o.credit ? el('div', 'credit', clock) : null;
     if (this.creditEl) this.creditEl.textContent = '\u00A9fixsarts.studio';
 
@@ -335,7 +375,10 @@
     if (!o.fit) return;
     var avail = o.position ? window.innerWidth - o.offset * 2 : this.target.clientWidth;
     if (!avail) return;
-    var natural = this.row.getBoundingClientRect().width + (o.padding ? o.size * 0.24 : 0);
+    var w = this.row.getBoundingClientRect().width;
+    if (this.dateEl) w = Math.max(w, this.dateEl.getBoundingClientRect().width);
+    if (this.creditEl) w = Math.max(w, this.creditEl.getBoundingClientRect().width);
+    var natural = w + (o.padding ? o.size * 0.24 : 0);
     if (natural > avail) {
       this.clock.style.setProperty('--h', Math.max(24, o.size * avail / natural) + 'px');
     }
@@ -361,7 +404,7 @@
     if (d.seconds) { d.seconds[0].set(sec[0], animate); d.seconds[1].set(sec[1], animate); }
 
     if (this.ampmEl) this.ampmEl.textContent = h24 >= 12 ? 'PM' : 'AM';
-    if (this.dateEl) this.dateEl.textContent = this.dfmt.format(now).replace(/[.,]/g, '').toUpperCase();
+    if (this.dateEl) this.dateEl.textContent = dateText(this.dfmt, o.dateFormat, now);
   };
 
   FlipClock.prototype._schedule = function () {
@@ -434,6 +477,22 @@
     if (d.position) o.position = d.position;
     if (d.offset) o.offset = parseFloat(d.offset);
 
+    // format tanggal: data-date-weekday / -day / -month / -year (nilai "false" = sembunyikan)
+    var fv = function (v) { return (v === 'false' || v === 'none' || v === 'off') ? false : v; };
+    var df = {};
+    if (d.dateWeekday !== undefined) df.weekday = fv(d.dateWeekday);
+    if (d.dateDay !== undefined) df.day = fv(d.dateDay);
+    if (d.dateMonth !== undefined) df.month = fv(d.dateMonth);
+    if (d.dateYear !== undefined) df.year = fv(d.dateYear);
+    if (d.dateComma !== undefined) df.comma = bool(d.dateComma);
+    if (d.dateUppercase !== undefined) df.uppercase = bool(d.dateUppercase);
+    if (Object.keys(df).length) o.dateFormat = df;
+
+    // jarak (px): data-gap-digit / data-gap-group / data-gap-date
+    if (d.gapDigit !== undefined) o.gapDigit = parseFloat(d.gapDigit);
+    if (d.gapGroup !== undefined) o.gapGroup = parseFloat(d.gapGroup);
+    if (d.gapDate !== undefined) o.gapDate = parseFloat(d.gapDate);
+
     var colors = {};
     if (d.bg) colors.background = d.bg;
     if (d.card) colors.card = d.card;
@@ -466,6 +525,11 @@
     themes: THEMES,
     defaults: DEFAULTS,
     create: function (target, options) { return new FlipClock(target, options); },
+    /** Hasil teks tanggal untuk opsi tertentu, contoh: FixsFlipClock.formatDate(new Date(), { locale: 'id-ID' }) */
+    formatDate: function (date, options) {
+      var o = merge(DEFAULTS, options || {});
+      return dateText(makeDateFmt(o), o.dateFormat, date || new Date());
+    },
     init: autoInit
   };
 
