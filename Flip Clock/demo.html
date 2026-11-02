@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fixs Flip Clock — Demo</title>
+<style>
+  :root{--bg:#f4f4f5;--panel:#fff;--line:#e4e4e7;--ink:#18181b;--mute:#71717a;--acc:#18181b}
+  @media (prefers-color-scheme:dark){:root{--bg:#0e0e10;--panel:#18181b;--line:#2a2a2e;--ink:#f4f4f5;--mute:#a1a1aa;--acc:#f4f4f5}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 56px}
+  h1{font-size:26px;margin:0 0 4px;letter-spacing:-.02em}
+  h2{font-size:13px;margin:40px 0 14px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);font-weight:600}
+  p.sub{margin:0;color:var(--mute)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .cap{font-size:12px;color:var(--mute);margin:0 0 10px}
+  .playground{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+  .controls h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
+  .f{display:grid;gap:6px}
+  label{font-size:13px}
+  select,input[type=range],button{width:100%}
+  select,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  button{cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--acc)}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+  .checks label{display:flex;gap:6px;align-items:center}
+  .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .colors label{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  input[type=color]{width:36px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
+  pre{margin:0;background:#0b0b0d;color:#e4e4e7;padding:16px;border-radius:12px;overflow:auto;font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .codehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .codehead button{width:auto;padding:6px 12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mute);font-weight:600}
+  code{font:12.5px ui-monospace,Menlo,monospace;background:var(--bg);padding:1px 5px;border-radius:5px}
+  @media (max-width:860px){.playground,.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Fixs Flip Clock</h1>
+  <p class="sub">Widget jam flip untuk website mana pun. Satu file JS, tanpa dependensi.</p>
+
+  <h2>Cara pasang</h2>
+  <div class="box">
+    <p class="cap">Tempel dua baris ini di website mana pun:</p>
+<pre>&lt;script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js"&gt;&lt;/script&gt;
+&lt;div data-fixs-flipclock data-theme="dark"&gt;&lt;/div&gt;</pre>
+    <p class="cap" style="margin:10px 0 0">Repo: <a href="https://github.com/fixsarts/widgets/tree/main/Flip%20Clock" style="color:inherit">github.com/fixsarts/widgets</a></p>
+  </div>
+
+  <h2>Varian standar</h2>
+  <div class="grid2">
+    <div class="box">
+      <p class="cap">Hitam (default)</p>
+      <div data-fixs-flipclock data-theme="dark" data-size="130"></div>
+    </div>
+    <div class="box">
+      <p class="cap">Putih</p>
+      <div data-fixs-flipclock data-theme="light" data-size="130"></div>
+    </div>
+  </div>
+
+  <h2>Contoh konfigurasi lain</h2>
+  <div class="grid2">
+    <div class="box">
+      <p class="cap">Jam &amp; menit saja, format 24 jam</p>
+      <div data-fixs-flipclock data-theme="dark" data-show="hours,minutes" data-hour12="false" data-separator="colon" data-size="130"></div>
+    </div>
+    <div class="box">
+      <p class="cap">Warna custom, tanggal Bahasa Indonesia</p>
+      <div data-fixs-flipclock data-bg="#1e1b4b" data-card="#4338ca" data-text="#ffffff" data-divider="#1e1b4b"
+           data-label="#c7d2fe" data-date-color="#c7d2fe" data-credit-color="#818cf8"
+           data-locale="id-ID" data-timezone="Asia/Makassar" data-size="130"></div>
+    </div>
+  </div>
+
+  <h2>Playground</h2>
+  <div class="playground">
+    <div style="display:grid;gap:16px;min-width:0">
+      <div class="stage" id="stage"><div id="preview"></div></div>
+      <div>
+        <div class="codehead"><strong>Kode siap pakai</strong><button id="copy">Salin</button></div>
+        <pre id="code"></pre>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="f">
+        <h3>Tema</h3>
+        <select id="theme">
+          <option value="dark">Hitam</option>
+          <option value="light">Putih</option>
+        </select>
+      </div>
+
+      <div class="f">
+        <h3>Warna custom</h3>
+        <div class="colors">
+          <label>Latar <input type="color" data-color="background"></label>
+          <label>Kartu <input type="color" data-color="card"></label>
+          <label>Angka <input type="color" data-color="text"></label>
+          <label>Garis <input type="color" data-color="divider"></label>
+          <label>AM/PM <input type="color" data-color="label"></label>
+          <label>Tanggal <input type="color" data-color="date"></label>
+        </div>
+        <button id="resetColors" type="button">Reset warna</button>
+      </div>
+
+      <div class="f">
+        <h3>Tampilkan</h3>
+        <div class="checks">
+          <label><input type="checkbox" data-show="hours" checked> Jam</label>
+          <label><input type="checkbox" data-show="minutes" checked> Menit</label>
+          <label><input type="checkbox" data-show="seconds" checked> Detik</label>
+          <label><input type="checkbox" data-show="date" checked> Tanggal</label>
+        </div>
+      </div>
+
+      <div class="f">
+        <h3>Format</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="hour12" checked> 12 jam</label>
+          <label><input type="checkbox" id="flip" checked> Efek flip</label>
+          <label><input type="checkbox" id="colon"> Titik dua</label>
+          <label><input type="checkbox" id="credit" checked> Credit</label>
+        </div>
+      </div>
+
+      <div class="f">
+        <label for="size">Ukuran: <span id="sizeVal">130</span>px</label>
+        <input type="range" id="size" min="60" max="220" value="130">
+      </div>
+
+      <div class="f">
+        <label for="tz">Zona waktu</label>
+        <select id="tz">
+          <option value="">Perangkat (otomatis)</option>
+          <option value="Asia/Jakarta">WIB — Jakarta</option>
+          <option value="Asia/Makassar">WITA — Makassar</option>
+          <option value="Asia/Jayapura">WIT — Jayapura</option>
+          <option value="UTC">UTC</option>
+          <option value="America/New_York">New York</option>
+          <option value="Europe/London">London</option>
+          <option value="Asia/Tokyo">Tokyo</option>
+        </select>
+      </div>
+
+      <div class="f">
+        <label for="locale">Bahasa tanggal</label>
+        <select id="locale">
+          <option value="en-US">English</option>
+          <option value="id-ID">Indonesia</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <h2>Opsi konfigurasi</h2>
+  <div class="box" style="overflow:auto">
+    <table>
+      <tr><th>Opsi (JS)</th><th>Atribut HTML</th><th>Keterangan</th></tr>
+      <tr><td><code>theme</code></td><td><code>data-theme</code></td><td><code>dark</code> atau <code>light</code></td></tr>
+      <tr><td><code>colors</code></td><td><code>data-bg</code> <code>data-card</code> <code>data-text</code> <code>data-divider</code> <code>data-label</code> <code>data-date-color</code> <code>data-credit-color</code></td><td>Override warna tema (nilai CSS apa pun)</td></tr>
+      <tr><td><code>show</code></td><td><code>data-show="hours,minutes"</code></td><td>Pilih bagian yang tampil: <code>hours</code>, <code>minutes</code>, <code>seconds</code>, <code>date</code></td></tr>
+      <tr><td><code>hour12</code></td><td><code>data-hour12</code></td><td><code>true</code> = AM/PM, <code>false</code> = 24 jam</td></tr>
+      <tr><td><code>separator</code></td><td><code>data-separator</code></td><td><code>none</code> atau <code>colon</code></td></tr>
+      <tr><td><code>flip</code></td><td><code>data-flip</code></td><td>Efek flip on/off</td></tr>
+      <tr><td><code>size</code></td><td><code>data-size</code></td><td>Tinggi kartu (px). Otomatis mengecil bila container sempit</td></tr>
+      <tr><td><code>timezone</code></td><td><code>data-timezone</code></td><td>Contoh <code>Asia/Makassar</code></td></tr>
+      <tr><td><code>locale</code></td><td><code>data-locale</code></td><td>Bahasa tanggal, contoh <code>id-ID</code></td></tr>
+      <tr><td><code>credit</code></td><td><code>data-credit</code></td><td>Tulisan ©fixsarts.studio</td></tr>
+    </table>
+    <p class="cap" style="margin:12px 0 0">Via JS: <code>const jam = FixsFlipClock.create('#jam', {...})</code>, ubah saat berjalan dengan <code>jam.update({...})</code>, hapus dengan <code>jam.destroy()</code>.</p>
+  </div>
+</div>
+
+<script src="flip-clock.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  // Link CDN (jsDelivr) dari repo GitHub fixsarts/widgets
+  var CDN = 'https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js';
+  var state = {
+    theme: 'dark', colors: {}, size: 130, hour12: true, flip: true,
+    separator: 'none', credit: true, timezone: null, locale: 'en-US',
+    show: { hours: true, minutes: true, seconds: true, date: true }
+  };
+  var clock = FixsFlipClock.create('#preview', state);
+
+  function syncPickers() {
+    var base = FixsFlipClock.themes[state.theme];
+    document.querySelectorAll('[data-color]').forEach(function (i) {
+      var k = i.dataset.color;
+      i.value = toHex(state.colors[k] || base[k]);
+    });
+  }
+  function toHex(c) { return /^#[0-9a-f]{6}$/i.test(c) ? c : '#000000'; }
+
+  function code() {
+    var o = { theme: state.theme };
+    if (Object.keys(state.colors).length) o.colors = state.colors;
+    o.show = state.show;
+    o.hour12 = state.hour12;
+    if (state.separator !== 'none') o.separator = state.separator;
+    if (!state.flip) o.flip = false;
+    o.size = state.size;
+    if (state.timezone) o.timezone = state.timezone;
+    if (state.locale !== 'en-US') o.locale = state.locale;
+    if (!state.credit) o.credit = false;
+    $('#code').textContent =
+      '<script src="' + CDN + '"><\/script>\n' +
+      '<div id="jam"></div>\n\n' +
+      '<script>\n' +
+      '  FixsFlipClock.create("#jam", ' + JSON.stringify(o, null, 2).replace(/\n/g, '\n  ') + ');\n' +
+      '<\/script>';
+  }
+
+  function apply() { clock.update(state); code(); }
+
+  $('#theme').onchange = function () {
+    state.theme = this.value; state.colors = {};
+    syncPickers(); apply();
+  };
+  document.querySelectorAll('[data-color]').forEach(function (i) {
+    i.oninput = function () { state.colors[i.dataset.color] = i.value; apply(); };
+  });
+  $('#resetColors').onclick = function () { state.colors = {}; syncPickers(); apply(); };
+  document.querySelectorAll('[data-show]').forEach(function (i) {
+    i.onchange = function () {
+      state.show[i.dataset.show] = i.checked;
+      if (!state.show.hours && !state.show.minutes && !state.show.seconds) {
+        state.show[i.dataset.show] = true; i.checked = true; // minimal satu angka tampil
+      }
+      apply();
+    };
+  });
+  $('#hour12').onchange = function () { state.hour12 = this.checked; apply(); };
+  $('#flip').onchange = function () { state.flip = this.checked; apply(); };
+  $('#colon').onchange = function () { state.separator = this.checked ? 'colon' : 'none'; apply(); };
+  $('#credit').onchange = function () { state.credit = this.checked; apply(); };
+  $('#size').oninput = function () { state.size = +this.value; $('#sizeVal').textContent = this.value; apply(); };
+  $('#tz').onchange = function () { state.timezone = this.value || null; apply(); };
+  $('#locale').onchange = function () { state.locale = this.value; apply(); };
+  $('#copy').onclick = function () {
+    var b = this;
+    navigator.clipboard.writeText($('#code').textContent).then(function () {
+      b.textContent = 'Tersalin!'; setTimeout(function () { b.textContent = 'Salin'; }, 1500);
+    });
+  };
+
+  syncPickers(); code();
+})();
+</script>
+</body>
+</html>
