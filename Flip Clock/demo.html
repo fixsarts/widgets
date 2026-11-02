@@ -9,16 +9,39 @@
   @media (prefers-color-scheme:dark){:root{--bg:#0e0e10;--panel:#18181b;--line:#2a2a2e;--ink:#f4f4f5;--mute:#a1a1aa;--acc:#f4f4f5}}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 56px}
+  .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 72px}
   h1{font-size:26px;margin:0 0 4px;letter-spacing:-.02em}
-  h2{font-size:13px;margin:40px 0 14px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);font-weight:600}
+  h2{font-size:13px;margin:44px 0 14px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);font-weight:600}
+  h4{margin:0 0 2px;font-size:15px}
   p.sub{margin:0;color:var(--mute)}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
-  .cap{font-size:12px;color:var(--mute);margin:0 0 10px}
-  .playground{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
-  .stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
-  .controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+  .cap{font-size:12.5px;color:var(--mute);margin:0 0 10px}
+  .stack{display:grid;gap:12px}
+
+  /* mock website */
+  .mock{border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+  .mock.light{background:#fff;color:#18181b}
+  .mock.dark{background:#0b0b0d;color:#f4f4f5}
+  .mock.gray{background:#eef0f3;color:#18181b}
+  .fake-search{max-width:420px;margin:22px auto 0;border:1px solid #d4d4d8;border-radius:999px;padding:9px 16px;color:#71717a;font-size:14px;background:#fff}
+  .hero-slot{padding:0 16px 22px}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;border-bottom:1px solid #26262b}
+  .nav b{letter-spacing:.04em}
+  .nav .links{display:flex;gap:14px;font-size:13px;color:#a1a1aa}
+  .nav-body{padding:26px 16px;color:#71717a;font-size:13px}
+  .side{display:grid;grid-template-columns:210px 1fr;min-height:230px}
+  .side aside{padding:14px;border-right:1px solid #d9dce1;background:#fff;display:grid;gap:12px;align-content:start}
+  .side main{padding:14px;color:#71717a;font-size:13px}
+  .fake-line{height:9px;border-radius:5px;background:#e4e4e7}
+  .foot{display:grid;gap:10px;justify-items:center;padding:20px 16px;font-size:13px;color:#52525b}
+  .full{display:grid;place-items:center;padding:26px 14px;min-height:260px}
+
+  pre{margin:0;background:#0b0b0d;color:#e4e4e7;padding:14px 16px;border-radius:10px;overflow:auto;font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre}
+
+  /* playground */
+  .playground{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start}
+  .controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:15px}
   .controls h3{margin:0;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute)}
   .f{display:grid;gap:6px}
   label{font-size:13px}
@@ -31,14 +54,19 @@
   .colors{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .colors label{display:flex;justify-content:space-between;align-items:center;gap:8px}
   input[type=color]{width:36px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
-  pre{margin:0;background:#0b0b0d;color:#e4e4e7;padding:16px;border-radius:12px;overflow:auto;font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
-  .codehead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-  .codehead button{width:auto;padding:6px 12px}
+  .codehead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+  .tabs{display:flex;gap:6px}
+  .tabs button,.codehead>button{width:auto;padding:5px 12px;font-size:13px}
+  .tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .chips button{padding:6px 4px;font-size:12.5px}
+  .btnrow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .btnrow button{font-size:12.5px;padding:6px 4px}
   table{width:100%;border-collapse:collapse;font-size:13px}
   td,th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
   th{color:var(--mute);font-weight:600}
   code{font:12.5px ui-monospace,Menlo,monospace;background:var(--bg);padding:1px 5px;border-radius:5px}
-  @media (max-width:860px){.playground,.grid2{grid-template-columns:1fr}}
+  @media (max-width:880px){.playground,.grid2,.side{grid-template-columns:1fr}.side aside{border-right:0;border-bottom:1px solid #d9dce1}}
 </style>
 </head>
 <body>
@@ -46,14 +74,16 @@
   <h1>Fixs Flip Clock</h1>
   <p class="sub">Widget jam flip untuk website mana pun. Satu file JS, tanpa dependensi.</p>
 
+  <!-- ===================== CARA PASANG ===================== -->
   <h2>Cara pasang</h2>
   <div class="box">
-    <p class="cap">Tempel dua baris ini di website mana pun:</p>
-<pre>&lt;script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js"&gt;&lt;/script&gt;
+    <p class="cap">Tempel dua baris ini di website mana pun. Nama class wrapper-nya bebas, yang wajib hanya atribut <code>data-fixs-flipclock</code>.</p>
+<pre>&lt;script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js" defer&gt;&lt;/script&gt;
 &lt;div data-fixs-flipclock data-theme="dark"&gt;&lt;/div&gt;</pre>
     <p class="cap" style="margin:10px 0 0">Repo: <a href="https://github.com/fixsarts/widgets/tree/main/Flip%20Clock" style="color:inherit">github.com/fixsarts/widgets</a></p>
   </div>
 
+  <!-- ===================== VARIAN STANDAR ===================== -->
   <h2>Varian standar</h2>
   <div class="grid2">
     <div class="box">
@@ -66,37 +96,144 @@
     </div>
   </div>
 
-  <h2>Contoh konfigurasi lain</h2>
+  <!-- ===================== PENEMPATAN ===================== -->
+  <h2>Contoh penempatan</h2>
+  <p class="cap" style="margin-top:-4px">Salin atribut sesuai tempat yang kamu mau. Kode di bawah tiap contoh dibuat otomatis dari elemen yang tampil.</p>
   <div class="grid2">
-    <div class="box">
-      <p class="cap">Jam &amp; menit saja, format 24 jam</p>
-      <div data-fixs-flipclock data-theme="dark" data-show="hours,minutes" data-hour12="false" data-separator="colon" data-size="130"></div>
+
+    <!-- A. Di bawah Search / Hero -->
+    <div class="box stack">
+      <div><h4>1. Di bawah Search (Hero)</h4>
+        <p class="cap">Taruh tepat setelah kotak search, di dalam section hero.</p></div>
+      <div class="mock light">
+        <div class="fake-search">Search</div>
+        <div class="hero-slot"><div style="max-width:560px;margin:24px auto 0">
+          <div data-fixs-flipclock data-demo-wrap="max-width:560px;margin:24px auto 0"
+               data-theme="light" data-show="hours,minutes,date" data-hour12="false"
+               data-size="90" data-locale="id-ID" data-timezone="Asia/Makassar"></div>
+        </div></div>
+      </div>
+      <pre class="snip"></pre>
     </div>
-    <div class="box">
-      <p class="cap">Warna custom, tanggal Bahasa Indonesia</p>
-      <div data-fixs-flipclock data-bg="#1e1b4b" data-card="#4338ca" data-text="#ffffff" data-divider="#1e1b4b"
-           data-label="#c7d2fe" data-date-color="#c7d2fe" data-credit-color="#818cf8"
-           data-locale="id-ID" data-timezone="Asia/Makassar" data-size="130"></div>
+
+    <!-- B. Navbar -->
+    <div class="box stack">
+      <div><h4>2. Navbar / Header</h4>
+        <p class="cap">Kecil, transparan, tanpa padding, rata kanan. Taruh di dalam <code>&lt;nav&gt;</code>.</p></div>
+      <div class="mock dark">
+        <div class="nav">
+          <b>LOGO</b>
+          <div class="links"><span>Home</span><span>Tools</span><span>Gallery</span></div>
+          <div style="width:150px">
+            <div data-fixs-flipclock data-demo-wrap="width:150px"
+                 data-theme="dark" data-show="hours,minutes" data-hour12="false" data-size="34"
+                 data-transparent data-padding="false" data-credit="false" data-align="right"></div>
+          </div>
+        </div>
+        <div class="nav-body">Konten halaman…</div>
+      </div>
+      <pre class="snip"></pre>
+    </div>
+
+    <!-- C. Sidebar / Card -->
+    <div class="box stack">
+      <div><h4>3. Sidebar / Card</h4>
+        <p class="cap">Lebar container sempit: ukuran otomatis menyesuaikan (<code>data-fit</code>).</p></div>
+      <div class="mock gray">
+        <div class="side">
+          <aside>
+            <div class="fake-line" style="width:60%"></div>
+            <div>
+              <div data-fixs-flipclock
+                   data-theme="light" data-show="hours,minutes,seconds" data-hour12="false" data-size="56"
+                   data-credit="false" data-radius="10"></div>
+            </div>
+            <div class="fake-line"></div><div class="fake-line" style="width:75%"></div>
+          </aside>
+          <main>Konten halaman…</main>
+        </div>
+      </div>
+      <pre class="snip"></pre>
+    </div>
+
+    <!-- D. Footer -->
+    <div class="box stack">
+      <div><h4>4. Footer</h4>
+        <p class="cap">Transparan dan tanpa padding supaya menyatu dengan footer.</p></div>
+      <div class="mock gray">
+        <div class="nav-body" style="color:#71717a">Konten halaman…</div>
+        <div class="foot">
+          <div style="width:100%;max-width:400px">
+            <div data-fixs-flipclock data-demo-wrap="width:100%;max-width:400px"
+                 data-theme="light" data-show="hours,minutes,date" data-size="46"
+                 data-transparent data-padding="false" data-align="center"></div>
+          </div>
+          <span>© 2026 Nama Website</span>
+        </div>
+      </div>
+      <pre class="snip"></pre>
+    </div>
+
+    <!-- E. Layar penuh -->
+    <div class="box stack">
+      <div><h4>5. Layar penuh (idle / lock screen)</h4>
+        <p class="cap">Ukuran besar, semua bagian tampil, di tengah halaman.</p></div>
+      <div class="mock dark full">
+        <div style="width:100%">
+          <div data-fixs-flipclock data-demo-wrap="width:100%"
+               data-theme="dark" data-size="180" data-timezone="Asia/Makassar"></div>
+        </div>
+      </div>
+      <pre class="snip"></pre>
+    </div>
+
+    <!-- F. Melayang -->
+    <div class="box stack">
+      <div><h4>6. Melayang di pojok layar</h4>
+        <p class="cap">Tanpa wrapper khusus: cukup <code>data-position</code>. Coba pilih posisinya, jamnya muncul di halaman ini.</p></div>
+      <div class="btnrow" id="floatBtns">
+        <button type="button" data-float="top-left">Kiri atas</button>
+        <button type="button" data-float="top-center">Tengah atas</button>
+        <button type="button" data-float="top-right">Kanan atas</button>
+        <button type="button" data-float="off">Matikan</button>
+        <button type="button" data-float="bottom-left">Kiri bawah</button>
+        <button type="button" data-float="bottom-center">Tengah bawah</button>
+        <button type="button" data-float="bottom-right">Kanan bawah</button>
+      </div>
+      <pre id="floatCode"></pre>
     </div>
   </div>
 
-  <h2>Playground</h2>
+  <!-- ===================== PLAYGROUND ===================== -->
+  <h2>Playground (atur sendiri semua opsi)</h2>
   <div class="playground">
     <div style="display:grid;gap:16px;min-width:0">
-      <div class="stage" id="stage"><div id="preview"></div></div>
+      <div class="box" style="padding:20px"><div id="preview"></div></div>
       <div>
-        <div class="codehead"><strong>Kode siap pakai</strong><button id="copy">Salin</button></div>
+        <div class="codehead">
+          <div class="tabs"><button id="tabHtml" class="on" type="button">HTML</button><button id="tabJs" type="button">JavaScript</button></div>
+          <button id="copy" type="button">Salin</button>
+        </div>
         <pre id="code"></pre>
       </div>
     </div>
 
     <div class="controls">
       <div class="f">
+        <h3>Preset penempatan</h3>
+        <div class="chips">
+          <button type="button" data-preset="hero">Hero</button>
+          <button type="button" data-preset="navbar">Navbar</button>
+          <button type="button" data-preset="sidebar">Sidebar</button>
+          <button type="button" data-preset="footer">Footer</button>
+          <button type="button" data-preset="fullscreen">Penuh</button>
+          <button type="button" data-preset="reset">Reset</button>
+        </div>
+      </div>
+
+      <div class="f">
         <h3>Tema</h3>
-        <select id="theme">
-          <option value="dark">Hitam</option>
-          <option value="light">Putih</option>
-        </select>
+        <select id="theme"><option value="dark">Hitam</option><option value="light">Putih</option></select>
       </div>
 
       <div class="f">
@@ -115,26 +252,48 @@
       <div class="f">
         <h3>Tampilkan</h3>
         <div class="checks">
-          <label><input type="checkbox" data-show="hours" checked> Jam</label>
-          <label><input type="checkbox" data-show="minutes" checked> Menit</label>
-          <label><input type="checkbox" data-show="seconds" checked> Detik</label>
-          <label><input type="checkbox" data-show="date" checked> Tanggal</label>
+          <label><input type="checkbox" data-show="hours"> Jam</label>
+          <label><input type="checkbox" data-show="minutes"> Menit</label>
+          <label><input type="checkbox" data-show="seconds"> Detik</label>
+          <label><input type="checkbox" data-show="date"> Tanggal</label>
+          <label><input type="checkbox" data-show="ampm"> AM/PM</label>
+          <label><input type="checkbox" id="credit"> Credit</label>
         </div>
       </div>
 
       <div class="f">
         <h3>Format</h3>
         <div class="checks">
-          <label><input type="checkbox" id="hour12" checked> 12 jam</label>
-          <label><input type="checkbox" id="flip" checked> Efek flip</label>
+          <label><input type="checkbox" id="hour12"> 12 jam</label>
+          <label><input type="checkbox" id="leadingZero"> Angka 0 depan</label>
+          <label><input type="checkbox" id="flip"> Efek flip</label>
           <label><input type="checkbox" id="colon"> Titik dua</label>
-          <label><input type="checkbox" id="credit" checked> Credit</label>
         </div>
       </div>
 
       <div class="f">
+        <h3>Tata letak</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="padding"> Padding</label>
+          <label><input type="checkbox" id="transparent"> Transparan</label>
+        </div>
+        <label for="align">Rata</label>
+        <select id="align"><option value="left">Kiri</option><option value="center">Tengah</option><option value="right">Kanan</option></select>
+        <label for="position">Posisi</label>
+        <select id="position">
+          <option value="">Ikut elemen (inline)</option>
+          <option value="top-left">Melayang: kiri atas</option>
+          <option value="top-center">Melayang: tengah atas</option>
+          <option value="top-right">Melayang: kanan atas</option>
+          <option value="bottom-left">Melayang: kiri bawah</option>
+          <option value="bottom-center">Melayang: tengah bawah</option>
+          <option value="bottom-right">Melayang: kanan bawah</option>
+        </select>
+      </div>
+
+      <div class="f">
         <label for="size">Ukuran: <span id="sizeVal">130</span>px</label>
-        <input type="range" id="size" min="60" max="220" value="130">
+        <input type="range" id="size" min="24" max="220" value="130">
       </div>
 
       <div class="f">
@@ -153,25 +312,32 @@
 
       <div class="f">
         <label for="locale">Bahasa tanggal</label>
-        <select id="locale">
-          <option value="en-US">English</option>
-          <option value="id-ID">Indonesia</option>
-        </select>
+        <select id="locale"><option value="en-US">English</option><option value="id-ID">Indonesia</option></select>
       </div>
     </div>
   </div>
 
+  <!-- ===================== TABEL OPSI ===================== -->
   <h2>Opsi konfigurasi</h2>
   <div class="box" style="overflow:auto">
     <table>
       <tr><th>Opsi (JS)</th><th>Atribut HTML</th><th>Keterangan</th></tr>
       <tr><td><code>theme</code></td><td><code>data-theme</code></td><td><code>dark</code> atau <code>light</code></td></tr>
       <tr><td><code>colors</code></td><td><code>data-bg</code> <code>data-card</code> <code>data-text</code> <code>data-divider</code> <code>data-label</code> <code>data-date-color</code> <code>data-credit-color</code></td><td>Override warna tema (nilai CSS apa pun)</td></tr>
-      <tr><td><code>show</code></td><td><code>data-show="hours,minutes"</code></td><td>Pilih bagian yang tampil: <code>hours</code>, <code>minutes</code>, <code>seconds</code>, <code>date</code></td></tr>
+      <tr><td><code>show</code></td><td><code>data-show="hours,minutes"</code></td><td>Bagian yang tampil: <code>hours</code>, <code>minutes</code>, <code>seconds</code>, <code>date</code></td></tr>
+      <tr><td><code>show.ampm</code></td><td><code>data-ampm</code></td><td>Label AM/PM (mode 12 jam)</td></tr>
       <tr><td><code>hour12</code></td><td><code>data-hour12</code></td><td><code>true</code> = AM/PM, <code>false</code> = 24 jam</td></tr>
+      <tr><td><code>leadingZero</code></td><td><code>data-leading-zero</code></td><td><code>09</code> atau <code>9</code></td></tr>
       <tr><td><code>separator</code></td><td><code>data-separator</code></td><td><code>none</code> atau <code>colon</code></td></tr>
       <tr><td><code>flip</code></td><td><code>data-flip</code></td><td>Efek flip on/off</td></tr>
-      <tr><td><code>size</code></td><td><code>data-size</code></td><td>Tinggi kartu (px). Otomatis mengecil bila container sempit</td></tr>
+      <tr><td><code>size</code></td><td><code>data-size</code></td><td>Tinggi kartu (px)</td></tr>
+      <tr><td><code>fit</code></td><td><code>data-fit</code></td><td>Otomatis mengecil bila container sempit</td></tr>
+      <tr><td><code>align</code></td><td><code>data-align</code></td><td><code>left</code>, <code>center</code>, <code>right</code></td></tr>
+      <tr><td><code>padding</code></td><td><code>data-padding</code></td><td><code>false</code> = tanpa padding luar (navbar/footer)</td></tr>
+      <tr><td><code>transparent</code></td><td><code>data-transparent</code></td><td>Latar transparan, ikut warna website</td></tr>
+      <tr><td><code>position</code></td><td><code>data-position</code></td><td>Melayang: <code>top-left</code> <code>top-center</code> <code>top-right</code> <code>bottom-left</code> <code>bottom-center</code> <code>bottom-right</code></td></tr>
+      <tr><td><code>offset</code></td><td><code>data-offset</code></td><td>Jarak dari tepi layar untuk mode melayang (px)</td></tr>
+      <tr><td><code>radius</code></td><td><code>data-radius</code></td><td>Lengkung sudut kartu (px)</td></tr>
       <tr><td><code>timezone</code></td><td><code>data-timezone</code></td><td>Contoh <code>Asia/Makassar</code></td></tr>
       <tr><td><code>locale</code></td><td><code>data-locale</code></td><td>Bahasa tanggal, contoh <code>id-ID</code></td></tr>
       <tr><td><code>credit</code></td><td><code>data-credit</code></td><td>Tulisan ©fixsarts.studio</td></tr>
@@ -184,69 +350,170 @@
 <script>
 (function () {
   var $ = function (s) { return document.querySelector(s); };
-  // Link CDN (jsDelivr) dari repo GitHub fixsarts/widgets
+  var $$ = function (s) { return document.querySelectorAll(s); };
   var CDN = 'https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Flip%20Clock/flip-clock.js';
-  var state = {
-    theme: 'dark', colors: {}, size: 130, hour12: true, flip: true,
+
+  /* ---------- 1. Kode otomatis untuk contoh penempatan ---------- */
+  $$('.snip').forEach(function (pre) {
+    var node = pre.parentNode.querySelector('[data-fixs-flipclock]');
+    var lines = ['<div data-fixs-flipclock'];
+    Array.prototype.forEach.call(node.attributes, function (a) {
+      if (a.name === 'data-fixs-flipclock' || a.name.indexOf('data-demo') === 0) return;
+      lines.push('     ' + a.name + (a.value === '' ? '' : '="' + a.value + '"'));
+    });
+    var html = lines.join('\n') + '></div>';
+    var wrap = node.getAttribute('data-demo-wrap');
+    if (wrap) html = '<div style="' + wrap + '">\n  ' + html.replace(/\n/g, '\n  ') + '\n</div>';
+    pre.textContent = html;
+  });
+
+  /* ---------- 2. Jam melayang ---------- */
+  var floating = null, holder = null;
+  function floatCode(p) {
+    $('#floatCode').textContent = p
+      ? '<div data-fixs-flipclock\n     data-theme="dark" data-show="hours,minutes,date" data-hour12="false"\n     data-size="70" data-position="' + p + '"></div>'
+      : '<!-- pilih posisi di atas -->';
+  }
+  floatCode(null);
+  $$('[data-float]').forEach(function (b) {
+    b.onclick = function () {
+      var p = b.dataset.float;
+      if (floating) { floating.destroy(); floating = null; }
+      if (holder) { holder.remove(); holder = null; }
+      if (p === 'off') { floatCode(null); return; }
+      holder = document.createElement('div');
+      document.body.appendChild(holder);
+      floating = FixsFlipClock.create(holder, {
+        theme: 'dark', size: 70, hour12: false, position: p,
+        show: { hours: true, minutes: true, seconds: false, date: true }
+      });
+      floatCode(p);
+    };
+  });
+
+  /* ---------- 3. Playground ---------- */
+  var BASE = {
+    theme: 'dark', colors: {}, size: 130, hour12: true, leadingZero: true, flip: true,
     separator: 'none', credit: true, timezone: null, locale: 'en-US',
-    show: { hours: true, minutes: true, seconds: true, date: true }
+    align: 'center', padding: true, transparent: false, position: null,
+    show: { hours: true, minutes: true, seconds: true, date: true, ampm: true }
   };
+  var PRESETS = {
+    hero:       { theme: 'light', size: 90, hour12: false, show: { seconds: false } },
+    navbar:     { theme: 'dark', size: 34, hour12: false, padding: false, transparent: true, align: 'right', credit: false, show: { seconds: false, date: false } },
+    sidebar:    { theme: 'light', size: 56, hour12: false, credit: false, show: { date: false } },
+    footer:     { theme: 'light', size: 46, padding: false, transparent: true, show: { seconds: false } },
+    fullscreen: { theme: 'dark', size: 180 },
+    reset:      {}
+  };
+  var state = clone(BASE), mode = 'html';
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function deep(a, b) { for (var k in b) { if (b[k] && typeof b[k] === 'object' && !Array.isArray(b[k])) deep(a[k], b[k]); else a[k] = b[k]; } return a; }
+
   var clock = FixsFlipClock.create('#preview', state);
 
-  function syncPickers() {
-    var base = FixsFlipClock.themes[state.theme];
-    document.querySelectorAll('[data-color]').forEach(function (i) {
-      var k = i.dataset.color;
-      i.value = toHex(state.colors[k] || base[k]);
-    });
-  }
   function toHex(c) { return /^#[0-9a-f]{6}$/i.test(c) ? c : '#000000'; }
+  function syncControls() {
+    var base = FixsFlipClock.themes[state.theme];
+    $('#theme').value = state.theme;
+    $$('[data-color]').forEach(function (i) { i.value = toHex(state.colors[i.dataset.color] || base[i.dataset.color]); });
+    $$('[data-show]').forEach(function (i) { i.checked = !!state.show[i.dataset.show]; });
+    $('#credit').checked = state.credit;
+    $('#hour12').checked = state.hour12;
+    $('#leadingZero').checked = state.leadingZero;
+    $('#flip').checked = state.flip;
+    $('#colon').checked = state.separator === 'colon';
+    $('#padding').checked = state.padding;
+    $('#transparent').checked = state.transparent;
+    $('#align').value = state.align;
+    $('#position').value = state.position || '';
+    $('#size').value = state.size; $('#sizeVal').textContent = state.size;
+    $('#tz').value = state.timezone || '';
+    $('#locale').value = state.locale;
+  }
+
+  function attrs(s) {
+    var a = [['theme', s.theme]], cm = { background: 'bg', card: 'card', text: 'text', divider: 'divider', label: 'label', date: 'date-color' };
+    Object.keys(s.colors).forEach(function (k) { a.push([cm[k], s.colors[k]]); });
+    var list = ['hours', 'minutes', 'seconds', 'date'].filter(function (k) { return s.show[k]; });
+    if (list.length < 4) a.push(['show', list.join(',')]);
+    if (!s.hour12) a.push(['hour12', 'false']);
+    if (s.hour12 && !s.show.ampm) a.push(['ampm', 'false']);
+    if (!s.leadingZero) a.push(['leading-zero', 'false']);
+    if (s.separator !== 'none') a.push(['separator', s.separator]);
+    if (!s.flip) a.push(['flip', 'false']);
+    a.push(['size', s.size]);
+    if (s.timezone) a.push(['timezone', s.timezone]);
+    if (s.locale !== 'en-US') a.push(['locale', s.locale]);
+    if (!s.credit) a.push(['credit', 'false']);
+    if (s.align !== 'center') a.push(['align', s.align]);
+    if (!s.padding) a.push(['padding', 'false']);
+    if (s.transparent) a.push(['transparent', 'true']);
+    if (s.position) a.push(['position', s.position]);
+    return a;
+  }
 
   function code() {
-    var o = { theme: state.theme };
-    if (Object.keys(state.colors).length) o.colors = state.colors;
-    o.show = state.show;
-    o.hour12 = state.hour12;
-    if (state.separator !== 'none') o.separator = state.separator;
-    if (!state.flip) o.flip = false;
-    o.size = state.size;
-    if (state.timezone) o.timezone = state.timezone;
-    if (state.locale !== 'en-US') o.locale = state.locale;
-    if (!state.credit) o.credit = false;
-    $('#code').textContent =
-      '<script src="' + CDN + '"><\/script>\n' +
-      '<div id="jam"></div>\n\n' +
-      '<script>\n' +
-      '  FixsFlipClock.create("#jam", ' + JSON.stringify(o, null, 2).replace(/\n/g, '\n  ') + ');\n' +
-      '<\/script>';
+    var out;
+    if (mode === 'html') {
+      out = '<script src="' + CDN + '" defer><\/script>\n\n<div data-fixs-flipclock\n' +
+        attrs(state).map(function (x) { return '     data-' + x[0] + '="' + x[1] + '"'; }).join('\n') + '></div>';
+    } else {
+      var s = state, o = { theme: s.theme };
+      if (Object.keys(s.colors).length) o.colors = s.colors;
+      o.show = { hours: s.show.hours, minutes: s.show.minutes, seconds: s.show.seconds, date: s.show.date };
+      if (!s.show.ampm) o.show.ampm = false;
+      o.hour12 = s.hour12;
+      if (!s.leadingZero) o.leadingZero = false;
+      if (s.separator !== 'none') o.separator = s.separator;
+      if (!s.flip) o.flip = false;
+      o.size = s.size;
+      if (s.timezone) o.timezone = s.timezone;
+      if (s.locale !== 'en-US') o.locale = s.locale;
+      if (!s.credit) o.credit = false;
+      if (s.align !== 'center') o.align = s.align;
+      if (!s.padding) o.padding = false;
+      if (s.transparent) o.transparent = true;
+      if (s.position) o.position = s.position;
+      out = '<script src="' + CDN + '"><\/script>\n<div id="jam"></div>\n\n<script>\n  FixsFlipClock.create("#jam", ' +
+        JSON.stringify(o, null, 2).replace(/\n/g, '\n  ') + ');\n<\/script>';
+    }
+    $('#code').textContent = out;
   }
 
   function apply() { clock.update(state); code(); }
 
-  $('#theme').onchange = function () {
-    state.theme = this.value; state.colors = {};
-    syncPickers(); apply();
-  };
-  document.querySelectorAll('[data-color]').forEach(function (i) {
-    i.oninput = function () { state.colors[i.dataset.color] = i.value; apply(); };
+  $$('[data-preset]').forEach(function (b) {
+    b.onclick = function () {
+      state = deep(clone(BASE), PRESETS[b.dataset.preset]);
+      syncControls(); apply();
+    };
   });
-  $('#resetColors').onclick = function () { state.colors = {}; syncPickers(); apply(); };
-  document.querySelectorAll('[data-show]').forEach(function (i) {
+  $('#theme').onchange = function () { state.theme = this.value; state.colors = {}; syncControls(); apply(); };
+  $$('[data-color]').forEach(function (i) { i.oninput = function () { state.colors[i.dataset.color] = i.value; apply(); }; });
+  $('#resetColors').onclick = function () { state.colors = {}; syncControls(); apply(); };
+  $$('[data-show]').forEach(function (i) {
     i.onchange = function () {
       state.show[i.dataset.show] = i.checked;
-      if (!state.show.hours && !state.show.minutes && !state.show.seconds) {
-        state.show[i.dataset.show] = true; i.checked = true; // minimal satu angka tampil
-      }
+      if (!state.show.hours && !state.show.minutes && !state.show.seconds) { state.show[i.dataset.show] = true; i.checked = true; }
       apply();
     };
   });
+  $('#credit').onchange = function () { state.credit = this.checked; apply(); };
   $('#hour12').onchange = function () { state.hour12 = this.checked; apply(); };
+  $('#leadingZero').onchange = function () { state.leadingZero = this.checked; apply(); };
   $('#flip').onchange = function () { state.flip = this.checked; apply(); };
   $('#colon').onchange = function () { state.separator = this.checked ? 'colon' : 'none'; apply(); };
-  $('#credit').onchange = function () { state.credit = this.checked; apply(); };
+  $('#padding').onchange = function () { state.padding = this.checked; apply(); };
+  $('#transparent').onchange = function () { state.transparent = this.checked; apply(); };
+  $('#align').onchange = function () { state.align = this.value; apply(); };
+  $('#position').onchange = function () { state.position = this.value || null; apply(); };
   $('#size').oninput = function () { state.size = +this.value; $('#sizeVal').textContent = this.value; apply(); };
   $('#tz').onchange = function () { state.timezone = this.value || null; apply(); };
   $('#locale').onchange = function () { state.locale = this.value; apply(); };
+
+  $('#tabHtml').onclick = function () { mode = 'html'; this.classList.add('on'); $('#tabJs').classList.remove('on'); code(); };
+  $('#tabJs').onclick = function () { mode = 'js'; this.classList.add('on'); $('#tabHtml').classList.remove('on'); code(); };
   $('#copy').onclick = function () {
     var b = this;
     navigator.clipboard.writeText($('#code').textContent).then(function () {
@@ -254,7 +521,7 @@
     });
   };
 
-  syncPickers(); code();
+  syncControls(); code();
 })();
 </script>
 </body>

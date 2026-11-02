@@ -58,6 +58,12 @@
     locale: 'en-US',        // bahasa untuk tanggal, contoh: 'id-ID'
     credit: true,           // tulisan ©fixsarts.studio
     radius: 14,             // lengkung sudut kartu (px)
+    align: 'center',        // 'left' | 'center' | 'right' (posisi jam di dalam container)
+    padding: true,          // false = tanpa padding luar (cocok untuk navbar / footer)
+    transparent: false,     // true = latar widget transparan (ikut warna website)
+    position: null,         // null = ikut posisi elemen | 'top-left' | 'top-center' | 'top-right'
+                            //   | 'bottom-left' | 'bottom-center' | 'bottom-right' (melayang/fixed)
+    offset: 16,             // jarak dari tepi layar (px), hanya untuk mode melayang
     loadFont: true,         // muat font Oswald & Roboto dari Google Fonts
     fontFamily: "'Oswald','Bebas Neue','Arial Narrow',Impact,sans-serif"
   };
@@ -105,7 +111,7 @@
     ':host{display:block}',
     '*{box-sizing:border-box;margin:0;padding:0}',
     '.clock{--h:160px;--d:.3s;',
-    '  display:flex;flex-direction:column;align-items:center;justify-content:center;',
+    '  display:flex;flex-direction:column;align-items:var(--ai,center);justify-content:center;',
     '  gap:calc(var(--h)*.17);width:100%;',
     '  padding:calc(var(--h)*.2) calc(var(--h)*.12) calc(var(--h)*.1);',
     '  background:var(--bg);color:var(--text);border-radius:var(--r);user-select:none}',
@@ -148,9 +154,9 @@
     /* tanggal & credit */
     '.date{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;font-weight:400;',
     '  font-size:calc(var(--h)*.17);letter-spacing:.2em;word-spacing:.45em;color:var(--date);',
-    '  text-transform:uppercase;text-align:center;white-space:nowrap}',
+    '  text-transform:uppercase;text-align:var(--ta,center);white-space:nowrap}',
     '.credit{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;',
-    '  font-size:max(9px,calc(var(--h)*.065));letter-spacing:.04em;color:var(--credit);text-align:center}',
+    '  font-size:max(9px,calc(var(--h)*.065));letter-spacing:.04em;color:var(--credit);text-align:var(--ta,center)}',
     '@media (prefers-reduced-motion:reduce){.card.flipping .flip-top,.card.flipping .flip-bottom{animation-duration:.01s}}'
   ].join('\n');
 
@@ -224,11 +230,13 @@
     this._render(false);
     this._schedule();
 
+    var self = this;
     if (typeof ResizeObserver !== 'undefined') {
-      var self = this;
       this.ro = new ResizeObserver(function () { self._fit(); });
       this.ro.observe(t);
     }
+    this._onResize = function () { self._fit(); };
+    window.addEventListener('resize', this._onResize);
   }
 
   FlipClock.prototype._formatters = function () {
@@ -270,6 +278,11 @@
     clock.style.setProperty('--font', o.fontFamily);
     clock.style.setProperty('--r', o.radius + 'px');
     clock.style.setProperty('--h', o.size + 'px');
+    clock.style.setProperty('--ai', o.align === 'left' ? 'flex-start' : o.align === 'right' ? 'flex-end' : 'center');
+    clock.style.setProperty('--ta', o.align === 'left' || o.align === 'right' ? o.align : 'center');
+    if (o.transparent) clock.style.setProperty('--bg', 'transparent');
+    if (!o.padding) clock.style.padding = '0';
+    this._place();
 
     var row = this.row = el('div', 'row', clock);
     var dur = o.flipDuration;
@@ -300,13 +313,29 @@
     this._fit();
   };
 
+  /** Mode melayang: tempel di pojok layar (position: fixed). */
+  FlipClock.prototype._place = function () {
+    var s = this.host.style, o = this.opts, p = o.position;
+    s.cssText = '';
+    if (!p) return;
+    var off = o.offset + 'px';
+    s.position = 'fixed';
+    s.zIndex = '2147483000';
+    s.width = 'max-content';
+    s.maxWidth = 'calc(100vw - ' + (o.offset * 2) + 'px)';
+    if (p.indexOf('top') === 0) s.top = off; else s.bottom = off;
+    if (/left$/.test(p)) s.left = off;
+    else if (/right$/.test(p)) s.right = off;
+    else { s.left = '50%'; s.transform = 'translateX(-50%)'; }
+  };
+
   FlipClock.prototype._fit = function () {
     var o = this.opts;
     this.clock.style.setProperty('--h', o.size + 'px');
     if (!o.fit) return;
-    var avail = this.target.clientWidth;
+    var avail = o.position ? window.innerWidth - o.offset * 2 : this.target.clientWidth;
     if (!avail) return;
-    var natural = this.row.getBoundingClientRect().width + o.size * 0.24;
+    var natural = this.row.getBoundingClientRect().width + (o.padding ? o.size * 0.24 : 0);
     if (natural > avail) {
       this.clock.style.setProperty('--h', Math.max(24, o.size * avail / natural) + 'px');
     }
@@ -361,6 +390,7 @@
   FlipClock.prototype.destroy = function () {
     clearTimeout(this.timeout);
     if (this.ro) this.ro.disconnect();
+    window.removeEventListener('resize', this._onResize);
     var all = this.digits;
     ['hours', 'minutes', 'seconds'].forEach(function (k) {
       if (all[k]) all[k].forEach(function (x) { x.destroy(); });
@@ -398,6 +428,11 @@
     if (d.locale) o.locale = d.locale;
     if (d.credit !== undefined) o.credit = bool(d.credit);
     if (d.radius) o.radius = parseFloat(d.radius);
+    if (d.align) o.align = d.align;
+    if (d.padding !== undefined) o.padding = bool(d.padding);
+    if (d.transparent !== undefined) o.transparent = bool(d.transparent);
+    if (d.position) o.position = d.position;
+    if (d.offset) o.offset = parseFloat(d.offset);
 
     var colors = {};
     if (d.bg) colors.background = d.bg;

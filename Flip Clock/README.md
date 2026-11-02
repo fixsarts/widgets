@@ -65,9 +65,61 @@ Unduh `flip-clock.js`, simpan di proyek kamu, lalu:
 | `timezone` | `data-timezone` | perangkat | Contoh `Asia/Makassar` |
 | `locale` | `data-locale` | `en-US` | Bahasa tanggal, contoh `id-ID` |
 | `radius` | `data-radius` | `14` | Lengkung sudut kartu (px) |
+| `align` | `data-align` | `center` | `left`, `center`, `right` |
+| `padding` | `data-padding` | `true` | `false` = tanpa padding luar (navbar/footer) |
+| `transparent` | `data-transparent` | `false` | Latar transparan, ikut warna website |
+| `position` | `data-position` | - | Mode melayang: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right` |
+| `offset` | `data-offset` | `16` | Jarak dari tepi layar untuk mode melayang (px) |
 | `credit` | `data-credit` | `true` | Tulisan ©fixsarts.studio |
 | `loadFont` | - | `true` | Muat Oswald & Roboto dari Google Fonts. Set `false` untuk pakai font sendiri |
 | `fontFamily` | - | Oswald | Font angka |
+
+## Contoh penempatan
+
+Nama class wrapper bebas, tidak berpengaruh ke widget. Yang wajib hanya atribut `data-fixs-flipclock`.
+
+**Di bawah kotak Search (hero)**
+```html
+<div style="max-width:560px;margin:24px auto 0">
+  <div data-fixs-flipclock data-theme="light" data-show="hours,minutes,date"
+       data-hour12="false" data-size="90"></div>
+</div>
+```
+
+**Navbar / header** (kecil, transparan, rata kanan)
+```html
+<div style="width:150px">
+  <div data-fixs-flipclock data-theme="dark" data-show="hours,minutes" data-hour12="false"
+       data-size="34" data-transparent data-padding="false" data-credit="false" data-align="right"></div>
+</div>
+```
+
+**Sidebar / card** (ukuran menyesuaikan lebar container)
+```html
+<div data-fixs-flipclock data-theme="light" data-show="hours,minutes,seconds"
+     data-hour12="false" data-size="56" data-credit="false"></div>
+```
+
+**Footer**
+```html
+<div style="width:100%;max-width:400px">
+  <div data-fixs-flipclock data-theme="light" data-show="hours,minutes,date"
+       data-size="46" data-transparent data-padding="false"></div>
+</div>
+```
+
+**Layar penuh (idle / lock screen)**
+```html
+<div data-fixs-flipclock data-theme="dark" data-size="180"></div>
+```
+
+**Melayang di pojok layar** (tanpa wrapper khusus)
+```html
+<div data-fixs-flipclock data-theme="dark" data-show="hours,minutes,date"
+     data-hour12="false" data-size="70" data-position="bottom-right"></div>
+```
+
+Semua contoh ini bisa dicoba dan diatur langsung di `demo.html`.
 
 ### Contoh warna custom
 
