@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contoh instalasi</title></head>
+<body>
+  <h1>Website saya</h1>
+  <p>Isi halaman biasa. Modal akan muncul otomatis.</p>
+
+  <!-- 1. Pasang script (CDN GitHub via jsDelivr) -->
+  <script src="https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Pop%20up/Model1/widget.js"></script>
+  <!-- 2. Konfigurasi -->
+  <script>
+    FixsArtsWelcome.init({
+      title: "Welcome!",
+      description: "Welcome to our website.",
+      theme: "glass",
+      closeButton: true,
+      credit: { enabled: true },
+      buttons: [{ label: "Mulai", href: "#mulai", close: true }]
+    });
+  </script>
+</body>
+</html>
