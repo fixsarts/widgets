@@ -1,4 +1,4 @@
-/*! Fixs.Arts Welcome Widget · Model1 v1.1.0 · Vanilla JS, tanpa dependensi */
+/*! Fixs.Arts Welcome Widget · Model1 v1.1.1 · Vanilla JS, tanpa dependensi */
 (function (w) {
   'use strict';
   var G = 'FixsArtsWelcome', d = w.document, TAG = '[' + G + '] ';
@@ -212,18 +212,26 @@
     }
     au.loop = a.loop; au.volume = a.volume; au.muted = a.muted;
   }
-  function audioKill() { if (au) { try { au.pause(); } catch (e) {} au.removeAttribute('src'); au = null; auSrc = ''; } blocked = false; }
+  function audioKill() { disarm(); if (au) { try { au.pause(); } catch (e) {} au.removeAttribute('src'); au = null; auSrc = ''; } blocked = false; }
+  /* Browser memblokir autoplay bersuara sampai pengunjung berinteraksi. Jika diblokir: widget menunggu
+     interaksi pertama (klik/tap/tombol) di mana saja di halaman, lalu memutar dari awal. */
+  var armed = false, GEST = ['pointerdown', 'pointerup', 'touchend', 'keydown', 'click'];
+  function onGesture(e) { if (e.isTrusted && isOpen && au && !userPaused) audioPlay(); }
+  function arm() { if (armed) return; armed = true; GEST.forEach(function (ev) { d.addEventListener(ev, onGesture, true); }); }
+  function disarm() { if (!armed) return; armed = false; GEST.forEach(function (ev) { d.removeEventListener(ev, onGesture, true); }); }
   function audioPlay() {
     if (!au) return;
     var p; try { p = au.play(); } catch (e) {}
-    if (p && p.catch) p.catch(function () { blocked = true; paintAudio(); });   // autoplay diblokir: tampilkan tombol play
-    else if (p) blocked = false;
+    if (p && p.then) p.then(function () { blocked = false; disarm(); paintAudio(); }, function (err) {
+      if (err && err.name === 'NotAllowedError') { blocked = true; arm(); }
+      paintAudio();
+    });
   }
-  function audioStop() { if (au) { try { au.pause(); au.currentTime = 0; } catch (e) {} } blocked = false; userPaused = false; paintAudio(); }
+  function audioStop() { if (au) { try { au.pause(); au.currentTime = 0; } catch (e) {} } blocked = false; userPaused = false; disarm(); paintAudio(); }
   function paintAudio() {
     if (!ui.bar) return;
     var on = au && !au.paused;
-    ui.bar.style.display = (cfg.audio.src && (cfg.audio.controls || blocked)) ? 'flex' : 'none';
+    ui.bar.style.display = (cfg.audio.src && cfg.audio.controls) ? 'flex' : 'none';
     ui.play.replaceChildren(icon(on ? 'pause' : 'play')); ui.play.setAttribute('aria-label', on ? 'Jeda audio' : 'Putar audio');
     ui.lbl.textContent = blocked && !on ? 'Ketuk untuk memutar suara' : 'Audio';
     ui.mute.replaceChildren(icon(au && au.muted ? 'mute' : 'vol')); ui.mute.setAttribute('aria-label', au && au.muted ? 'Aktifkan suara' : 'Matikan suara');
@@ -311,7 +319,6 @@
       });
       ui.mute.addEventListener('click', function () { if (au) au.muted = !au.muted; });
       ui.vol.addEventListener('input', function () { if (au) { au.volume = +ui.vol.value; if (au.volume > 0) au.muted = false; } });
-      ov.addEventListener('pointerdown', function () { if (isOpen && blocked && !userPaused) audioPlay(); }, { once: true });   // retry setelah interaksi pertama
     }
     if (c.credit.enabled && c.credit.text) {
       var cr = c.credit.href ? el('a', 'cr', ct, c.credit.text) : el('span', 'cr', ct, c.credit.text);
@@ -407,7 +414,7 @@
   }
 
   var api = {
-    version: '1.1.0',
+    version: '1.1.1',
     init: init, open: open, close: close, destroy: destroy, update: update,
     isOpen: function () { return isOpen; },
     getConfig: function () { return JSON.parse(JSON.stringify(cfg)); },

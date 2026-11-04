@@ -80,7 +80,13 @@ image: { src: "https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Pop%20up/Model1
 ```
 
 ## Audio
-Audio hanya diputar saat modal tampil dan berhenti saat ditutup. Browser sering memblokir autoplay: jika diblokir, panel audio otomatis muncul dengan tombol play ("Ketuk untuk memutar suara"), dan audio dicoba lagi pada interaksi pertama di modal.
+Audio hanya diputar saat modal tampil dan berhenti saat ditutup.
+
+Browser memblokir autoplay bersuara sampai pengunjung berinteraksi dengan halaman (klik, tap, atau tekan tombol). Jika diblokir:
+- `controls: false`: tidak ada tombol apa pun. Audio mulai otomatis dari awal pada klik/tap pertama pengunjung di mana saja di halaman.
+- `controls: true`: panel audio tampil dengan tombol play ("Ketuk untuk memutar suara"), dan audio juga mulai pada interaksi pertama.
+
+`loop` dan `volume` berlaku setelah audio berjalan. Jika pengunjung sudah pernah berinteraksi dengan situs Anda (misalnya pindah dari halaman lain), autoplay biasanya langsung jalan.
 
 ## Mengganti gambar dan audio
 Upload file ke `assets/images/` atau `assets/audio/` di repo, lalu isi URL-nya:
