@@ -1,4 +1,4 @@
-/*! Fixs.Arts Welcome Widget · Model1 v1.0.0 · Vanilla JS, tanpa dependensi */
+/*! Fixs.Arts Welcome Widget · Model1 v1.1.0 · Vanilla JS, tanpa dependensi */
 (function (w) {
   'use strict';
   var G = 'FixsArtsWelcome', d = w.document, TAG = '[' + G + '] ';
@@ -16,14 +16,21 @@
     zIndex: 2147483000, container: null, fontFamily: '', onOpen: null, onClose: null,
     size: { width: 460, height: 'auto' },
     shape: 'rounded', radius: 24, padding: 32, gap: 14, opacity: 1,
+    show: { image: true, subtitle: true, title: true, description: true, info: true, buttons: true },
+    text: {
+      title: { size: 34, color: '', weight: 700 },
+      subtitle: { size: 12, color: '', weight: 600 },
+      description: { size: 15.5, color: '', weight: 400 },
+      info: { size: 13, color: '', weight: 400 }
+    },
     colors: { background: '#0b0b10', text: '#f5f5f7', muted: '#a1a1b0', accent: '#7c5cff', accent2: '#2f7bff', border: '#ffffff', overlay: '#000000' },
     gradient: { enabled: false, from: '#2f7bff', to: '#7c5cff', angle: 135 },
     backgroundImage: { src: '', size: 'cover', position: 'center', dim: 0.45 },
-    image: { src: '', alt: '', height: 180, radius: 16, fit: 'cover' },
+    image: { src: '', alt: '', height: 0, radius: 16, fit: 'cover', posX: 50, posY: 50, zoom: 1, width: 100, align: 'center', order: 'top', bleed: false },   // height 0 = otomatis (rasio asli)
     buttons: [], buttonsAlign: 'center',
     effects: {
-      overlay: { enabled: true, opacity: 0.55 },
-      blur: { enabled: true, amount: 10 },
+      overlay: { enabled: true, opacity: 0.6 },
+      blur: { enabled: false, amount: 6 },          // blur layar penuh berat di web yang banyak animasi: default mati
       glass: { enabled: false, blur: 18, opacity: 0.12 },
       animation: { type: 'scale', duration: 350 },
       shadow: { enabled: true, color: '#000000', blur: 60, opacity: 0.5 },
@@ -36,7 +43,7 @@
   var PRESETS = {
     dark: {},
     light: { colors: { background: '#ffffff', text: '#0b0b10', muted: '#5f6270', border: '#0b0b10', overlay: '#0b0b10' }, effects: { shadow: { opacity: 0.25 }, border: { opacity: 0.14 } }, credit: { color: '#7b7b8a' } },
-    glass: { colors: { background: '#ffffff', text: '#ffffff', muted: '#dcdce8', border: '#ffffff' }, effects: { glass: { enabled: true }, overlay: { opacity: 0.35 }, border: { opacity: 0.3 } }, credit: { color: '#d0d0dc' } },
+    glass: { colors: { background: '#ffffff', text: '#ffffff', muted: '#dcdce8', border: '#ffffff' }, effects: { glass: { enabled: true }, overlay: { opacity: 0.45 }, border: { opacity: 0.3 } }, credit: { color: '#d0d0dc' } },
     neon: { colors: { background: '#07070d' }, gradient: { enabled: true, from: '#0b1a3d', to: '#2a0f4a' }, effects: { glow: { enabled: true, color: '#6a5cff', size: 48 }, border: { opacity: 0.35 } } },
     minimal: { shape: 'custom', radius: 6, colors: { background: '#fafafa', text: '#111111', muted: '#666666', border: '#111111', overlay: '#111111' }, effects: { animation: { type: 'fade' }, shadow: { enabled: false }, blur: { enabled: false }, border: { opacity: 0.18 } }, credit: { color: '#888888' } }
   };
@@ -93,7 +100,18 @@
     var b = c.backgroundImage || {};
     o.backgroundImage = { src: url(b.src, 'backgroundImage.src'), size: pick(b.size, ['cover', 'contain'], 'cover'), position: /^[a-z0-9 %.-]+$/i.test(b.position || '') ? b.position : 'center', dim: num(b.dim, 0.45, 0, 1) };
     var im = c.image || {};
-    o.image = { src: url(im.src, 'image.src'), alt: String(im.alt || ''), height: num(im.height, 180, 60, 600), radius: num(im.radius, 16, 0, 80), fit: pick(im.fit, ['cover', 'contain'], 'cover') };
+    o.image = {
+      src: url(im.src, 'image.src'), alt: String(im.alt || ''), height: num(im.height, 0, 0, 800, 'image.height'), radius: num(im.radius, 16, 0, 80), fit: pick(im.fit, ['cover', 'contain'], 'cover'),
+      posX: num(im.posX, 50, 0, 100), posY: num(im.posY, 50, 0, 100), zoom: num(im.zoom, 1, 1, 4), width: num(im.width, 100, 20, 100),
+      align: pick(im.align, ['left', 'center', 'right'], 'center'), order: pick(im.order, ['top', 'bottom'], 'top'), bleed: !!im.bleed
+    };
+    var sw = c.show || {}, tx0 = c.text || {}, DT = DEFAULTS.text;
+    o.show = {}; ['image', 'subtitle', 'title', 'description', 'info', 'buttons'].forEach(function (k) { o.show[k] = sw[k] !== false; });
+    o.text = {};
+    Object.keys(DT).forEach(function (k) {
+      var t = tx0[k] || {};
+      o.text[k] = { size: num(t.size, DT[k].size, 8, 96, 'text.' + k + '.size'), color: t.color ? col(t.color, '', 'text.' + k + '.color') : '', weight: num(t.weight, DT[k].weight, 100, 900) };
+    });
     o.buttonsAlign = pick(c.buttonsAlign, ['left', 'center', 'right'], 'center', 'buttonsAlign');
     o.buttons = (Array.isArray(c.buttons) ? c.buttons : []).slice(0, 4).map(function (x) {
       x = x || {};
@@ -106,8 +124,8 @@
     });
     var e = c.effects || {}, E = {};
     var ov = e.overlay || {}, bl = e.blur || {}, gl = e.glass || {}, an = e.animation || {}, sh = e.shadow || {}, gw = e.glow || {}, bd = e.border || {};
-    E.overlay = { enabled: !!ov.enabled, opacity: num(ov.opacity, 0.55, 0, 1) };
-    E.blur = { enabled: !!bl.enabled, amount: num(bl.amount, 10, 0, 40) };
+    E.overlay = { enabled: !!ov.enabled, opacity: num(ov.opacity, 0.6, 0, 1) };
+    E.blur = { enabled: !!bl.enabled, amount: num(bl.amount, 6, 0, 40) };
     E.glass = { enabled: !!gl.enabled, blur: num(gl.blur, 18, 0, 60), opacity: num(gl.opacity, 0.12, 0, 1) };
     E.animation = { type: pick(an.type, ['fade', 'scale', 'slide-up', 'slide-down', 'slide-left', 'none'], 'scale', 'effects.animation.type'), duration: num(an.duration, 350, 0, 3000) };
     E.shadow = { enabled: !!sh.enabled, color: col(sh.color, '#000000'), blur: num(sh.blur, 60, 0, 200), opacity: num(sh.opacity, 0.5, 0, 1) };
@@ -140,12 +158,12 @@
     '.pill .ct{padding-left:calc(var(--p)*1.7);padding-right:calc(var(--p)*1.7)}',
     '.x{position:absolute;top:14px;right:14px;z-index:2;width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:50%;cursor:pointer;color:inherit;background:rgba(127,127,127,.2);transition:background .2s,transform .2s}',
     '.x:hover{background:rgba(127,127,127,.38);transform:rotate(90deg)}',
-    '.im{width:100%;height:var(--ih);flex:none;border-radius:var(--ir);overflow:hidden;background:rgba(127,127,127,.12)}',
-    '.im img{display:block;width:100%;height:100%;object-fit:var(--fit)}',
-    '.sb{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ac)}',
-    '.tt{font-size:clamp(24px,7cqw,34px);line-height:1.15;font-weight:700;letter-spacing:-.02em;overflow-wrap:anywhere}',
-    '.ds{font-size:15.5px;line-height:1.65;color:var(--mu);white-space:pre-line}',
-    '.inf{font-size:13px;line-height:1.55;color:var(--mu);opacity:.85;white-space:pre-line}',
+    '.im{width:var(--iw);align-self:var(--ia);height:var(--ih);flex:none;border-radius:var(--ir);overflow:hidden;background:rgba(127,127,127,.12)}',
+    '.im img{display:block;width:100%;height:100%;object-fit:var(--fit)}.im.auto{height:auto}.im.auto img{height:auto}.im.bleed{width:calc(100% + var(--p)*2);align-self:stretch;margin:calc(var(--p)*-1) calc(var(--p)*-1) 0;border-radius:0}',
+    '.sb{letter-spacing:.16em;text-transform:uppercase;color:var(--ac)}',
+    '.tt{line-height:1.15;letter-spacing:-.02em;overflow-wrap:anywhere}',
+    '.ds{line-height:1.65;color:var(--mu);white-space:pre-line}',
+    '.inf{line-height:1.55;color:var(--mu);opacity:.85;white-space:pre-line}',
     '.bts{display:flex;flex-wrap:wrap;gap:10px;width:100%;justify-content:var(--bj);margin-top:4px}',
     '.bt{font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid transparent;transition:transform .15s,filter .15s,background .15s}',
     '.bt:hover{transform:translateY(-1px);filter:brightness(1.1)}.bt:active{transform:none}',
@@ -225,7 +243,7 @@
     set('p', c.padding + 'px'); set('g', c.gap + 'px'); set('op', c.opacity);
     set('tx', C.text); set('mu', C.muted); set('ac', C.accent); set('ac2', C.accent2);
     set('al', c.align); set('ai', { left: 'flex-start', center: 'center', right: 'flex-end' }[c.align]); set('bj', { left: 'flex-start', center: 'center', right: 'flex-end' }[c.buttonsAlign]);
-    set('ih', c.image.height + 'px'); set('ir', c.image.radius + 'px'); set('fit', c.image.fit);
+    set('ih', c.image.height ? c.image.height + 'px' : 'auto'); set('ir', c.image.radius + 'px'); set('fit', c.image.fit); set('iw', c.image.width + '%'); set('ia', { left: 'flex-start', center: 'center', right: 'flex-end' }[c.image.align]);
     set('cs', c.credit.size + 'px'); set('cc', c.credit.color); set('cp', { left: 'flex-start', center: 'center', right: 'flex-end' }[c.credit.position]);
     var bg = C.background;
     if (E.glass.enabled) bg = rgba(C.background, E.glass.opacity);
@@ -253,16 +271,27 @@
       var x = el('button', 'x', md); x.type = 'button'; x.setAttribute('aria-label', 'Tutup'); x.appendChild(icon('x'));
       x.addEventListener('click', close);
     }
-    var ct = el('div', 'ct', md);
-    if (c.image.src) {
-      var fr = el('div', 'im', ct), im = el('img', null, fr); im.alt = c.image.alt; im.decoding = 'async'; im.src = c.image.src;
+    var ct = el('div', 'ct', md), S = c.show, T = c.text, I = c.image;
+    function addImage() {
+      if (!S.image || !I.src) return;
+      var fr = el('div', 'im' + (I.height ? '' : ' auto') + (I.bleed && I.order === 'top' ? ' bleed' : ''), ct), im = el('img', null, fr), pos = I.posX + '% ' + I.posY + '%';
+      im.alt = I.alt; im.src = I.src; im.style.objectPosition = pos;
+      if (I.zoom !== 1) { im.style.transform = 'scale(' + I.zoom + ')'; im.style.transformOrigin = pos; }
       im.addEventListener('error', function () { fr.style.display = 'none'; });
     }
-    if (c.subtitle) el('div', 'sb', ct, c.subtitle);
-    if (c.title) { var t = el('h2', 'tt', ct, c.title); t.id = 'fxw-title'; }
-    if (c.description) el('p', 'ds', ct, c.description);
-    if (c.info) el('p', 'inf', ct, c.info);
-    if (c.buttons.length) {
+    function addText(tag, cls, key, text) {
+      if (!S[key] || !text) return null;
+      var n = el(tag, cls, ct, text), st = T[key];
+      n.style.fontSize = key === 'title' ? 'min(' + st.size + 'px,9.5cqw)' : st.size + 'px'; n.style.fontWeight = st.weight;
+      if (st.color) n.style.color = st.color; return n;
+    }
+    if (I.order === 'top') addImage();
+    addText('div', 'sb', 'subtitle', c.subtitle);
+    var t = addText('h2', 'tt', 'title', c.title);
+    if (t) t.id = 'fxw-title'; else { md.removeAttribute('aria-labelledby'); md.setAttribute('aria-label', 'Dialog'); }
+    addText('p', 'ds', 'description', c.description); addText('p', 'inf', 'info', c.info);
+    if (I.order !== 'top') addImage();
+    if (S.buttons && c.buttons.length) {
       var row = el('div', 'bts', ct);
       c.buttons.forEach(function (b) {
         var n = b.href ? el('a', 'bt ' + b.variant + ' z-' + b.size, row, b.label) : el('button', 'bt ' + b.variant + ' z-' + b.size, row, b.label);
@@ -378,7 +407,7 @@
   }
 
   var api = {
-    version: '1.0.0',
+    version: '1.1.0',
     init: init, open: open, close: close, destroy: destroy, update: update,
     isOpen: function () { return isOpen; },
     getConfig: function () { return JSON.parse(JSON.stringify(cfg)); },

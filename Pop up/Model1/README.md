@@ -55,11 +55,13 @@ Semua opsi opsional. Nilai tidak valid dikoreksi ke default dan menampilkan peri
 | `colors` | | `background`, `text`, `muted`, `accent`, `accent2`, `border`, `overlay` |
 | `gradient` | | `{enabled, from, to, angle}` |
 | `backgroundImage` | | `{src, size, position, dim}` |
-| `image` | | Gambar di frame: `{src, alt, height, radius, fit}` |
+| `show` | semua `true` | On/off elemen: `{image, subtitle, title, description, info, buttons}`. Contoh hanya gambar + tombol: `show: {subtitle:false, title:false, description:false, info:false}` |
+| `text` | | Gaya tiap teks: `text.title`, `text.subtitle`, `text.description`, `text.info`, masing-masing `{size, color, weight}`. `color: ""` = ikut tema |
+| `image` | | `{src, alt, height, width, align, order, bleed, zoom, posX, posY, radius, fit}`. `height: 0` = otomatis (rasio asli). `posX`/`posY` (0-100) menggeser gambar, `zoom` (1-4) memperbesar, `order`: `top`/`bottom`, `bleed`: penuh sampai tepi modal |
 | `buttons` | `[]` | Maks. 4: `{label, href, target, color, textColor, variant, size, radius, close, onClick}` |
 | `buttonsAlign` | `center` | Posisi tombol |
 | `effects.overlay` | | `{enabled, opacity}` (dark overlay) |
-| `effects.blur` | | `{enabled, amount}` (backdrop blur) |
+| `effects.blur` | `enabled: false` | `{enabled, amount}`. Blur layar penuh bisa membuat gerak mouse patah-patah di web yang banyak animasi, jadi default mati. Gunakan overlay gelap sebagai gantinya |
 | `effects.glass` | | `{enabled, blur, opacity}` (glassmorphism) |
 | `effects.animation` | | `{type, duration}`: `fade`, `scale`, `slide-up`, `slide-down`, `slide-left`, `none` |
 | `effects.shadow` / `glow` / `border` | | Shadow, glow, dan garis tepi, masing-masing bisa on/off |
@@ -69,6 +71,13 @@ Semua opsi opsional. Nilai tidak valid dikoreksi ke default dan menampilkan peri
 | `onOpen`, `onClose` | | Callback |
 
 `credit: true` pada contoh singkat berarti credit aktif dengan pengaturan default. Isi `credit.href` dengan link Fixs.Arts Anda.
+
+## Template banner
+Demo memakai banner `assets/images/Card for Linktree.jpg` sebagai template awal:
+
+```js
+image: { src: "https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Pop%20up/Model1/assets/images/Card%20for%20Linktree.jpg" }
+```
 
 ## Audio
 Audio hanya diputar saat modal tampil dan berhenti saat ditutup. Browser sering memblokir autoplay: jika diblokir, panel audio otomatis muncul dengan tombol play ("Ketuk untuk memutar suara"), dan audio dicoba lagi pada interaksi pertama di modal.
@@ -82,7 +91,7 @@ audio: { src: "https://cdn.jsdelivr.net/gh/fixsarts/widgets@main/Pop%20up/Model1
 ```
 
 ## Menggunakan demo
-Buka `demo.html` di browser (satu folder dengan `widget.js`). Ubah pengaturan di panel kanan, preview langsung berubah. Ada preview Desktop/Mobile, tombol **Reset Configuration**, **Export JSON**, dan **Copy installation code**. Gambar/audio hasil upload hanya untuk preview; di kode hasil, diganti placeholder yang harus Anda isi dengan URL file di repo.
+Buka `demo.html` di browser (satu folder dengan `widget.js`). Ubah pengaturan di panel kanan, preview langsung berubah. Ada preview Desktop/Mobile, pilihan **latar contoh website** (hitam/putih/abu/gradient/warna kustom) untuk memperkirakan tampilan di web terang atau gelap, tombol **Salin** di kotak kode, tombol **Reset Configuration**, **Export JSON**, dan **Copy installation code**. Gambar/audio hasil upload hanya untuk preview; di kode hasil, diganti placeholder yang harus Anda isi dengan URL file di repo.
 
 ## Hosting
 - **jsDelivr (disarankan):** setelah folder ini ada di repo `fixsarts/widgets`, URL di atas langsung aktif. Jika file belum berubah setelah update, buka `https://purge.jsdelivr.net/gh/fixsarts/widgets@main/Pop%20up/Model1/widget.js`.
