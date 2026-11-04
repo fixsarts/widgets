@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fixs.Arts Chat — Konfigurator (Beta)</title>
+<style>
+  :root { --bg:#050507; --glass:rgba(255,255,255,.045); --line:rgba(255,255,255,.1); --txt:#f4f4f6; --mut:rgba(244,244,246,.6); --a:#3b82f6; --b:#8b5cf6; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: radial-gradient(900px 500px at 85% -10%, rgba(139,92,246,.22), transparent 60%), radial-gradient(800px 500px at 0% 0%, rgba(59,130,246,.18), transparent 60%), var(--bg);
+    color: var(--txt); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 0; min-height: 100vh; }
+  aside { border-right: 1px solid var(--line); background: var(--glass); backdrop-filter: blur(18px); height: 100vh; overflow-y: auto; padding: 22px 20px 90px; position: sticky; top: 0; }
+  main { min-width: 0; padding: 32px clamp(20px, 4vw, 56px) 120px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -.02em; display: flex; align-items: center; gap: 10px; }
+  .beta { font-size: 10px; font-weight: 700; letter-spacing: .12em; padding: 3px 8px; border-radius: 999px; background: linear-gradient(135deg, var(--a), var(--b)); color: #fff; }
+  .sub { color: var(--mut); margin: 6px 0 18px; }
+  details { border: 1px solid var(--line); border-radius: 16px; margin-bottom: 12px; background: rgba(0,0,0,.25); overflow: hidden; }
+  summary { cursor: pointer; padding: 13px 16px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--mut); font-weight: 400; font-size: 18px; }
+  details[open] > summary::after { content: "–"; }
+  .sec { padding: 4px 16px 16px; display: grid; gap: 12px; }
+  label.f { display: grid; gap: 5px; font-size: 12px; color: var(--mut); }
+  label.f > span.l { font-weight: 500; }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--txt); font: inherit; outline: none;
+  }
+  select option { background: #111; color: #fff; }
+  textarea { resize: vertical; min-height: 74px; }
+  input:focus, select:focus, textarea:focus { border-color: var(--a); box-shadow: 0 0 0 3px rgba(59,130,246,.2); }
+  input[type=color] { width: 44px; height: 36px; padding: 2px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.05); cursor: pointer; }
+  input[type=range] { width: 100%; accent-color: var(--b); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .inline { display: flex; align-items: center; gap: 10px; }
+  .inline .val { color: var(--mut); font-size: 12px; min-width: 42px; text-align: right; }
+  .check { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--txt); cursor: pointer; }
+  .check input { width: 17px; height: 17px; accent-color: var(--b); }
+  .plat { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 9px; background: rgba(255,255,255,.03); }
+  .plat.bad { border-color: rgba(239,68,68,.6); }
+  .plat-h { display: flex; align-items: center; gap: 8px; }
+  .plat-h b { flex: 1; font-weight: 600; }
+  .mini { border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--txt); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .mini:hover { background: rgba(255,255,255,.12); }
+  .hint { font-size: 11px; color: var(--mut); }
+  .hint.err { color: #f87171; display: none; }
+  .plat.bad .hint.err { display: block; }
+  .btn { border: 0; border-radius: 12px; padding: 10px 16px; font: inherit; font-weight: 600; color: #fff; cursor: pointer; background: linear-gradient(135deg, var(--a), var(--b)); }
+  .btn.ghost { background: rgba(255,255,255,.07); border: 1px solid var(--line); }
+  .btn:hover { filter: brightness(1.1); }
+  .add { display: flex; gap: 8px; }
+  .add select { flex: 1; }
+  .bar { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0 14px; }
+  pre { max-width: 100%; margin: 0; padding: 18px 20px; border-radius: 16px; border: 1px solid var(--line); background: rgba(0,0,0,.55); overflow: auto; font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #dbe4ff; max-height: 62vh; }
+  .note { margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); color: var(--mut); }
+  .note b { color: var(--txt); }
+  @media (max-width: 900px) { .wrap { grid-template-columns: minmax(0, 1fr); } aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside id="form" aria-label="Pengaturan widget"></aside>
+  <main>
+    <h1>Script untuk website kamu <span class="beta">BETA</span></h1>
+    <p class="sub">Ubah pengaturan di kiri. Widget di pojok kanan bawah halaman ini adalah pratinjau langsungnya (coba klik, ketik pesan, dan klik tombol platform).</p>
+    <div class="bar">
+      <button class="btn" id="copy" type="button">Salin script</button>
+      <button class="btn ghost" id="openw" type="button">Buka widget</button>
+      <button class="btn ghost" id="reset" type="button">Reset pengaturan</button>
+    </div>
+    <pre id="out" aria-label="Script hasil konfigurasi"></pre>
+    <div class="note"><b>Cara pasang:</b> tempel script di atas tepat sebelum tag <code>&lt;/body&gt;</code> pada website tujuan (HTML biasa, WordPress, Blogger, Shopify, dsb). Tidak perlu menginstal apa pun lagi.</div>
+  </main>
+</div>
+
+<script src="dist/chat.js"></script>
+<script>
+(function () {
+  'use strict';
+  var API = window.FixsArtsChat;
+  var SRC = 'https://fixsarts.github.io/widgets/Chat/Model1/dist/chat.js';
+  var D = API.defaults();
+  var C1 = '#3b82f6', C2 = '#8b5cf6';
+  var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
+  var state, ui, rows;
+
+  /* ---- platform rows: simple editable list (name / url / description) ---- */
+  var URL_HINT = { whatsapp: 'https://wa.me/628xxxxxxxxxx', instagram: 'https://instagram.com/username', telegram: 'https://t.me/username', tiktok: 'https://tiktok.com/@username',
+    email: 'mailto:nama@email.com', facebook: 'https://facebook.com/username', messenger: 'https://m.me/username', discord: 'https://discord.gg/kode-undangan',
+    youtube: 'https://youtube.com/@channel', x: 'https://x.com/username', github: 'https://github.com/username', line: 'https://line.me/R/ti/p/~id', phone: 'tel:+628xxxxxxxxxx' };
+  var rowFrom = function (c) { return { enabled: c.enabled !== false, type: c.type || 'custom', name: c.name || '', url: c.url || '', description: c.description || '' }; };
+  var rowOut = function (r) {
+    var o = { name: r.name }; if (r.type && r.type !== 'custom') o.type = r.type; o.url = r.url.trim();
+    if (r.description) o.description = r.description; if (!r.enabled) o.enabled = false; return o;
+  };
+  var DEFAULT_ROWS = D.contacts.map(rowFrom);
+  var DEFAULT_ROWS_OUT = JSON.stringify(DEFAULT_ROWS.filter(function (r) { return r.url; }).map(rowOut));
+
+  function reset() {
+    state = clone(D); ui = { c1: C1, c2: C2, bgAuto: true, bg: '#0a0a0d', biBgOn: false, biBg: '#000000' };
+    rows = DEFAULT_ROWS.map(clone);
+  }
+  reset();
+
+  /* ---- field definitions (path into the widget config) ---- */
+  var OPT = {
+    theme: [['dark', 'Gelap'], ['light', 'Terang'], ['glass', 'Glass (transparan)'], ['gradient', 'Gradient']],
+    ashape: [['circle', 'Lingkaran'], ['rounded', 'Kotak membulat'], ['squircle', 'Squircle'], ['hexagon', 'Hexagon'], ['square', 'Kotak']],
+    bshape: [['circle', 'Lingkaran'], ['rounded', 'Kotak membulat'], ['squircle', 'Squircle'], ['hexagon', 'Hexagon'], ['pill', 'Pill (dengan teks)'], ['square', 'Kotak']],
+    icon: [['chat', 'Chat'], ['chat-dots', 'Chat titik'], ['message', 'Pesan'], ['headset', 'Headset'], ['sparkle', 'Sparkle'], ['whatsapp', 'WhatsApp'], ['telegram', 'Telegram'], ['instagram', 'Instagram'], ['mail', 'Email'], ['phone', 'Telepon'], ['avatar', 'Foto profil'], ['custom', 'SVG kustom']],
+    h: [['right', 'Kanan'], ['left', 'Kiri']], v: [['bottom', 'Bawah'], ['top', 'Atas']],
+    open: [['morph', 'Morph'], ['scale', 'Scale'], ['fade', 'Fade'], ['slide', 'Slide'], ['bounce', 'Bounce'], ['none', 'Tanpa animasi']],
+    idle: [['pulse', 'Pulse'], ['floating', 'Floating'], ['bounce', 'Bounce'], ['rotate', 'Ring berputar'], ['none', 'Tidak ada']]
+  };
+  var SECTIONS = [
+    { t: 'Profil', open: true, f: [
+      ['profile.name', 'Nama', 'text'], ['profile.image', 'URL foto profil (GIF/PNG/JPG/WebP/SVG)', 'text', 'https://…/foto.png'],
+      ['profile.shape', 'Bentuk foto', 'select', OPT.ashape], ['profile.size', 'Ukuran foto', 'range', 36, 96, 1, 'px'],
+      ['profile.zoom', 'Zoom foto', 'range', 0.5, 3, 0.05, '×'], ['profile.posX', 'Fokus foto horizontal', 'range', 0, 100, 1, '%'], ['profile.posY', 'Fokus foto vertikal', 'range', 0, 100, 1, '%'],
+      ['profile.fit', 'Pas foto', 'select', [['cover', 'Cover (isi penuh)'], ['contain', 'Contain (utuh)']]],
+      ['status.mode', 'Status', 'select', [['online', 'Online'], ['offline', 'Offline']]]
+    ] },
+    { t: 'Pesan', f: [
+      ['welcome.title', 'Judul sambutan', 'text'], ['welcome.message', 'Pesan sambutan', 'textarea'],
+      ['chat.reply', 'Balasan otomatis', 'textarea'], ['chat.placeholder', 'Teks kolom ketik', 'text']
+    ] },
+    { t: 'Warna & tema', f: [
+      ['theme', 'Tema', 'select', OPT.theme], ['ui.c1', 'Warna utama', 'color'], ['ui.c2', 'Warna kedua', 'color'],
+      ['ui.bgAuto', 'Warna latar panel mengikuti tema', 'check'], ['ui.bg', 'Warna latar panel', 'color', null, null, null, null, 'bgManual'],
+      ['appearance.radius', 'Kelengkungan panel', 'range', 0, 40, 1, 'px']
+    ] },
+    { t: 'Tombol floating', f: [
+      ['button.shape', 'Bentuk tombol', 'select', OPT.bshape], ['button.size', 'Ukuran tombol', 'range', 40, 96, 1, 'px'],
+      ['button.label', 'Teks (untuk bentuk Pill)', 'text'],
+      ['button.tooltip.text', 'Teks tooltip', 'text'], ['button.badge.enabled', 'Tampilkan badge notifikasi', 'check'],
+      ['animation.idle', 'Animasi tombol', 'select', OPT.idle]
+    ] },
+    { t: 'Ikon & gambar tombol', f: [
+      ['button.icon', 'Sumber ikon (pilih “Foto profil” untuk memakai foto)', 'select', OPT.icon],
+      ['button.image', 'URL gambar/GIF kustom (menggantikan ikon)', 'text', 'https://…/logo.gif'],
+      ['button.customIcon', 'Kode SVG kustom', 'textarea', '<svg viewBox="0 0 24 24">…</svg>', null, null, null, 'svgOn'],
+      ['button.imageMode', 'Mode gambar (Pill + teks otomatis memakai “Di dalam”)', 'select', [['fill', 'Penuh — menutupi seluruh tombol'], ['inset', 'Di dalam — seperti ikon']], null, null, null, 'imgOn'],
+      ['button.imageShape', 'Bentuk gambar', 'select', [['same', 'Ikuti bentuk tombol']].concat(OPT.ashape).concat([['custom', 'Radius kustom']]), null, null, null, 'imgOn'],
+      ['button.imageRadius', 'Radius kustom (mis. 30% 70% 70% 30%)', 'text', '30% 70% 70% 30%', null, null, null, 'imgCustom'],
+      ['button.imageSize', 'Ukuran gambar (% dari tombol)', 'range', 30, 100, 1, '%', 'imgInset'],
+      ['button.imagePadding', 'Jarak gambar ke tepi tombol', 'range', 0, 20, 1, 'px', 'imgFill'],
+      ['button.imageFit', 'Pas gambar', 'select', [['cover', 'Cover (isi penuh)'], ['contain', 'Contain (utuh)']], null, null, null, 'imgOn'],
+      ['button.imageZoom', 'Zoom gambar', 'range', 0.5, 3, 0.05, '×', 'imgOn'],
+      ['button.imageX', 'Fokus gambar horizontal', 'range', 0, 100, 1, '%', 'imgOn'],
+      ['button.imageY', 'Fokus gambar vertikal', 'range', 0, 100, 1, '%', 'imgOn'],
+      ['button.imageOpacity', 'Transparansi gambar', 'range', 0.1, 1, 0.05, '', 'imgOn'],
+      ['ui.biBgOn', 'Beri warna di belakang gambar (untuk PNG/GIF transparan)', 'check', null, null, null, null, 'imgOn'],
+      ['ui.biBg', 'Warna belakang gambar', 'color', null, null, null, null, 'biBg'],
+      ['button.imageBorderWidth', 'Tebal garis tepi gambar', 'range', 0, 8, 1, 'px', 'imgOn'],
+      ['button.imageBorderColor', 'Warna garis tepi gambar', 'color', null, null, null, null, 'imgBw'],
+      ['button.iconSize', 'Ukuran ikon (% dari tombol)', 'range', 20, 80, 1, '%'],
+      ['button.iconColor', 'Warna ikon', 'color'],
+      ['button.iconStroke', 'Ketebalan garis ikon', 'range', 0.5, 3.5, 0.25, '', 'iconOn'],
+      ['button.iconRotate', 'Putar ikon', 'range', -180, 180, 5, '°', 'iconOn'],
+      ['button.closeIcon', 'Ganti jadi ✕ saat chat terbuka', 'check']
+    ] },
+    { t: 'Posisi & ukuran', f: [
+      ['layout.position', 'Posisi horizontal', 'select', OPT.h], ['layout.vertical', 'Posisi vertikal', 'select', OPT.v],
+      ['layout.offsetX', 'Jarak dari sisi', 'range', 0, 120, 1, 'px'], ['layout.offsetY', 'Jarak dari bawah/atas', 'range', 0, 120, 1, 'px'],
+      ['layout.panelWidth', 'Lebar jendela chat', 'range', 300, 520, 2, 'px'], ['layout.panelHeight', 'Tinggi jendela chat', 'range', 380, 760, 2, 'px'],
+      ['animation.open', 'Animasi buka', 'select', OPT.open], ['animation.close', 'Animasi tutup', 'select', OPT.open]
+    ] }
+  ];
+
+  var validImg = function (u) { u = (u || '').trim(); return /^(https?:\/\/|data:image\/|\.{0,2}\/)/i.test(u) || /\.(png|jpe?g|gif|webp|svg)$/i.test(u) ? u : ''; };
+  var PRED = {
+    bgManual: function () { return !ui.bgAuto; },
+    imgOn: function () { return state.button.icon === 'avatar' || !!validImg(state.button.image); },
+    imgFill: function () { return PRED.imgOn() && state.button.imageMode === 'fill'; },
+    imgInset: function () { return PRED.imgOn() && state.button.imageMode === 'inset'; },
+    iconOn: function () { return !PRED.imgOn(); },
+    svgOn: function () { return state.button.icon === 'custom' && !PRED.imgOn(); },
+    biBg: function () { return PRED.imgOn() && ui.biBgOn; },
+    imgBw: function () { return PRED.imgOn() && state.button.imageBorderWidth > 0; },
+    imgCustom: function () { return PRED.imgOn() && state.button.imageShape === 'custom'; }
+  };
+  var form = document.getElementById('form');
+  var getp = function (o, p) { return p.split('.').reduce(function (a, k) { return a == null ? a : a[k]; }, o); };
+  var setp = function (o, p, v) { var k = p.split('.'), l = k.pop(); k.forEach(function (x) { o = o[x]; }); o[l] = v; };
+  var src = function (path) { return path.indexOf('ui.') === 0 ? [ui, path.slice(3)] : [state, path]; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+  function fieldHtml(f) {
+    var path = f[0], label = f[1], type = f[2], s = src(path), val = getp(s[0], s[1]);
+    var dep = f[7] ? ' data-show="' + f[7] + '"' : '';
+    if (type === 'check') return '<label class="check"' + dep + '><input type="checkbox" data-p="' + path + '"' + (val ? ' checked' : '') + '> ' + esc(label) + '</label>';
+    var ctl;
+    if (type === 'text') ctl = '<input type="text" data-p="' + path + '" value="' + esc(val) + '" placeholder="' + esc(f[3] || '') + '">';
+    else if (type === 'textarea') ctl = '<textarea data-p="' + path + '">' + esc(val) + '</textarea>';
+    else if (type === 'color') ctl = '<input type="color" data-p="' + path + '" value="' + esc(val) + '">';
+    else if (type === 'select') ctl = '<select data-p="' + path + '">' + f[3].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>';
+    else if (type === 'range') ctl = '<div class="inline"><input type="range" data-p="' + path + '" min="' + f[3] + '" max="' + f[4] + '" step="' + f[5] + '" value="' + val + '"><span class="val" data-u="' + f[6] + '">' + val + f[6] + '</span></div>';
+    return '<label class="f"' + dep + '><span class="l">' + esc(label) + '</span>' + ctl + '</label>';
+  }
+
+  function platHtml() {
+    var types = API.platforms();
+    return '<details open><summary>Platform / link kontak</summary><div class="sec">' + rows.map(function (r, i) {
+      var bad = !r.url.trim();
+      return '<div class="plat' + (bad ? ' bad' : '') + '" data-i="' + i + '"><div class="plat-h"><label class="check"><input type="checkbox" data-r="enabled"' + (r.enabled ? ' checked' : '') + '></label><b>' + esc(r.name || 'Platform') + '</b>' +
+        '<button class="mini" type="button" data-act="up" title="Naikkan">↑</button><button class="mini" type="button" data-act="down" title="Turunkan">↓</button><button class="mini" type="button" data-act="del" title="Hapus">✕</button></div>' +
+        '<label class="f"><span class="l">Nama tombol</span><input type="text" data-r="name" value="' + esc(r.name) + '"></label>' +
+        '<label class="f"><span class="l">Link tujuan</span><input type="text" data-r="url" value="' + esc(r.url) + '" placeholder="' + esc(URL_HINT[r.type] || 'https://…') + '"></label>' +
+        '<label class="f"><span class="l">Keterangan kecil (opsional)</span><input type="text" data-r="description" value="' + esc(r.description) + '"></label>' +
+        '<div class="hint err">Isi link tujuan, kalau kosong tombol ini tidak ditampilkan.</div></div>';
+    }).join('') + '<div class="add"><select id="newType">' + types.map(function (t) { return '<option value="' + t.key + '">' + esc(t.name) + '</option>'; }).join('') +
+      '</select><button class="btn ghost" type="button" id="addPlat">+ Tambah</button></div></div></details>';
+  }
+
+  function render() {
+    var open = {}; Array.prototype.forEach.call(form.querySelectorAll('details'), function (d, i) { open[i] = d.open; });
+    var hasOpen = Object.keys(open).length > 0;
+    form.innerHTML = '<h1>Konfigurator <span class="beta">BETA</span></h1><p class="sub">Atur widget lalu salin scriptnya.</p>' +
+      SECTIONS.map(function (s, i) {
+        var o = hasOpen ? open[i] : s.open;
+        return '<details' + (o ? ' open' : '') + '><summary>' + s.t + '</summary><div class="sec">' + s.f.map(fieldHtml).join('') + '</div></details>';
+      }).join('') + platHtml() +
+      '<details><summary>Lainnya</summary><div class="sec"><label class="check"><input type="checkbox" data-p="credit.enabled"' + (state.credit.enabled ? ' checked' : '') + '> Tampilkan “Powered by Fixs.Arts”</label></div></details>';
+    if (hasOpen) { var last = form.querySelectorAll('details'); if (open[SECTIONS.length] === false) last[SECTIONS.length].open = false; }
+    syncDeps();
+  }
+  function syncDeps() {
+    Array.prototype.forEach.call(form.querySelectorAll('[data-show]'), function (el) { el.style.display = PRED[el.getAttribute('data-show')]() ? '' : 'none'; });
+  }
+
+  /* ---- build config from state, update the live widget and the snippet ---- */
+  function toConfig() {
+    var c = clone(state);
+    c.profile.image = validImg(state.profile.image);
+    c.button.image = validImg(state.button.image);
+    c.button.imageBackground = ui.biBgOn ? ui.biBg : null;
+    c.appearance.background = ui.bgAuto ? null : ui.bg;
+    if (ui.c1 !== C1 || ui.c2 !== C2) { c.appearance.accent = ui.c1; c.appearance.accent2 = ui.c2; c.button.gradient.from = ui.c1; c.button.gradient.to = ui.c2; }
+    c.contacts = rows.filter(function (r) { return r.url.trim(); }).map(function (r) {
+      var o = rowOut(r); if (r.type !== 'custom') o.type = r.type; return o;
+    });
+    delete c.events;
+    return c;
+  }
+  function snippet(c) {
+    var d = API.diff(c);
+    // contacts: compare the short form so an untouched list isn't printed
+    var short = JSON.stringify(rows.filter(function (r) { return r.url.trim(); }).map(rowOut));
+    if (short === DEFAULT_ROWS_OUT) delete d.contacts; else d.contacts = rows.filter(function (r) { return r.url.trim(); }).map(rowOut);
+    if (!(ui.c1 !== C1 || ui.c2 !== C2) && d.appearance) { delete d.appearance.accent; delete d.appearance.accent2; if (!Object.keys(d.appearance).length) delete d.appearance; }
+    var body = Object.keys(d).length ? JSON.stringify(d, null, 2).replace(/\n/g, '\n  ').replace(/<\//g, '<\\/') : '';
+    var out = '<script src="' + SRC + '"><\/script>\n';
+    if (body) out += '<script>\n  FixsArtsChat.init(' + body + ');\n<\/script>';
+    return out;
+  }
+  var timer;
+  function apply() {
+    var c = toConfig();
+    API.init(c);                     // first call creates the widget, next ones update it live
+    document.getElementById('out').textContent = snippet(c);
+  }
+  var applySoon = function () { clearTimeout(timer); timer = setTimeout(apply, 60); };
+
+  /* ---- events ---- */
+  form.addEventListener('input', function (e) {
+    var t = e.target, p = t.getAttribute('data-p'), r = t.getAttribute('data-r');
+    if (p) {
+      var s = src(p), v = t.type === 'checkbox' ? t.checked : (t.type === 'range' || t.type === 'number') ? Number(t.value) : t.value;
+      setp(s[0], s[1], v);
+      if (t.type === 'range') { var out = t.parentNode.querySelector('.val'); if (out) out.textContent = t.value + out.getAttribute('data-u'); }
+      syncDeps();
+    } else if (r) {
+      var i = +t.closest('.plat').getAttribute('data-i');
+      rows[i][r] = t.type === 'checkbox' ? t.checked : t.value;
+      if (r === 'name') t.closest('.plat').querySelector('b').textContent = t.value || 'Platform';
+      if (r === 'url') t.closest('.plat').classList.toggle('bad', !t.value.trim());
+    } else return;
+    applySoon();
+  });
+  form.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'addPlat') {
+      var k = document.getElementById('newType').value, info = API.platforms().filter(function (x) { return x.key === k; })[0];
+      rows.push({ enabled: true, type: k, name: info ? info.name : 'Link', url: '', description: '' }); render(); return;
+    }
+    var act = b.getAttribute('data-act'); if (!act) return;
+    var i = +b.closest('.plat').getAttribute('data-i');
+    if (act === 'del') rows.splice(i, 1);
+    if (act === 'up' && i > 0) rows.splice(i - 1, 0, rows.splice(i, 1)[0]);
+    if (act === 'down' && i < rows.length - 1) rows.splice(i + 1, 0, rows.splice(i, 1)[0]);
+    render(); apply();
+  });
+
+  document.getElementById('copy').addEventListener('click', function () {
+    var btn = this, text = document.getElementById('out').textContent;
+    var done = function () { btn.textContent = 'Tersalin ✓'; setTimeout(function () { btn.textContent = 'Salin script'; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { btn.textContent = 'Blok & salin manual'; } document.body.removeChild(ta);
+    }
+  });
+  document.getElementById('openw').addEventListener('click', function () { API.open(); });
+  document.getElementById('reset').addEventListener('click', function () { reset(); render(); apply(); API.open({ focus: false }); });
+
+  render(); apply();
+  API.open({ focus: false, instant: true });
+})();
+</script>
+</body>
+</html>
