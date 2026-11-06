@@ -6,6 +6,7 @@ Widget jam flip untuk website mana pun. Satu file JavaScript, tanpa dependensi, 
 - Dua tema standar: **dark** dan **light**, warna tetap bisa diubah custom
 - Bisa menampilkan sebagian saja (misal jam & menit saja)
 - Format 12 jam (AM/PM) atau 24 jam, zona waktu, dan bahasa tanggal bisa diatur
+- **Jadwal sholat** (opsional, default mati): Imsak, Subuh, Terbit, Dhuha, Dzuhur, Ashar, Maghrib, Isya sesuai wilayah, dengan hitung mundur
 
 ## Demo
 
@@ -77,8 +78,46 @@ Unduh `flip-clock.js`, simpan di proyek kamu, lalu:
 | `position` | `data-position` | - | Mode melayang: `top-left`, `top-center`, `top-right`, `bottom-left`, `bottom-center`, `bottom-right`. Widget otomatis dipindah ke `<body>`, jadi tetap menempel di layar walau tag-nya ditaruh di footer/section yang punya `transform`/`filter` |
 | `offset` | `data-offset` | `16` | Jarak dari tepi layar untuk mode melayang (px) |
 | `credit` | `data-credit` | `true` | Tulisan ©fixsarts.studio |
+| `prayer.enabled` | `data-prayer` | `false` | Aktifkan jadwal sholat. `data-prayer="false"` untuk mematikan |
+| `prayer.region` | `data-prayer-region` | `banjarmasin-timur` | Id / nama wilayah. Daftar lengkap: `FixsFlipClock.regions()` |
+| `prayer.lat` `prayer.lon` | `data-prayer-lat` `data-prayer-lon` | - | Koordinat sendiri (mengalahkan `region`), isi bersama `prayer.timezone` |
+| `prayer.show` | `data-prayer-show` | tanpa Terbit & Dhuha | Waktu yang tampil, contoh `imsak,subuh,terbit,dhuha,dzuhur,ashar,maghrib,isya` |
+| `prayer.layout` | `data-prayer-layout` | `row` | `row` (satu baris) atau `grid` (menyesuaikan lebar container) |
+| `prayer.countdown` | `data-prayer-countdown` | `true` | Hitung mundur menuju waktu berikutnya |
+| `prayer.location` | `data-prayer-location` | `true` | Tampilkan nama wilayah |
+| `prayer.highlight` | `data-prayer-highlight` | `true` | Tandai waktu berikutnya, redupkan yang sudah lewat |
+| `prayer.lang` | `data-prayer-lang` | `id` | `id` atau `en` (nama waktu) |
+| `prayer.onPrayer` | - | - | Callback `(nama, key, 'HH:MM')` saat waktu sholat masuk |
 | `loadFont` | - | `true` | Muat Oswald & Roboto dari Google Fonts. Set `false` untuk pakai font sendiri |
 | `fontFamily` | - | Oswald | Font angka |
+
+## Jadwal sholat
+
+Fitur opsional, **default mati**. Jadwal dihitung langsung di browser (tanpa API, tanpa internet) dengan acuan Kemenag RI: Subuh 20°, Isya 18°, Ashar Syafi'i, ihtiyat +2 menit, Imsak = Subuh - 10 menit. Jam otomatis mengikuti zona waktu wilayah yang dipilih (kecuali `timezone` diisi sendiri).
+
+```html
+<!-- aktifkan: tambahkan data-prayer + pilih wilayah -->
+<div data-fixs-flipclock data-theme="dark" data-size="80" data-hour12="false"
+     data-prayer data-prayer-region="kota-palembang"
+     data-prayer-show="imsak,subuh,terbit,dhuha,dzuhur,ashar,maghrib,isya"
+     data-prayer-layout="grid"></div>
+```
+
+```js
+const jam = FixsFlipClock.create('#jam', {
+  prayer: { enabled: true, region: 'kota-bandung', layout: 'grid' }
+});
+
+jam.update({ prayer: { enabled: false } });   // matikan jadwal tanpa membuat ulang widget
+jam.update({ prayer: { enabled: true } });    // nyalakan lagi
+```
+
+- **Matikan fitur**: hapus `data-prayer` (atau `enabled: false`). Jam tampil seperti biasa.
+- **Pilih waktu yang tampil**: `data-prayer-show` (nama Indonesia) atau `prayer.show` (`fajr`, `sunrise`, `dhuhr`, `asr`, `isha`, dst.). Nama alias seperti `subuh`, `dzuhur`, `isya` juga dikenali di JS.
+- **Daftar wilayah**: `FixsFlipClock.regions()` mengembalikan seluruh kota/kabupaten (+ beberapa kecamatan) beserta id-nya. Wilayah di luar daftar bisa pakai `lat` + `lon` + `timezone`.
+- **Cek jadwal tanpa widget**: `FixsFlipClock.prayerTimes(new Date(), { region: 'kota-banjarmasin' })`.
+- **Notifikasi saat waktu masuk**: `prayer.onPrayer = (nama, key, jam) => { ... }`.
+- Layout `grid` menyesuaikan lebar container. Pada mode melayang (`data-position`) lebar mengikuti isi, jadi grid tampil satu baris.
 
 ## Contoh penempatan
 
@@ -144,6 +183,11 @@ Semua contoh ini bisa dicoba dan diatur langsung di `demo.html`.
 - Setelah update file, lakukan hard refresh (Ctrl+Shift+R). Link CDN `@main` bisa tersimpan di cache hingga beberapa jam; gunakan tag versi (`@v1.0.1`) agar pasti.
 
 ## Changelog
+
+**v1.2.0**
+- Baru: **jadwal sholat** (Imsak, Subuh, Terbit, Dhuha, Dzuhur, Ashar, Maghrib, Isya) per wilayah, hitung mundur, penanda waktu berikutnya, layout `row`/`grid`, bisa dimatikan (default mati).
+- Baru: atribut `data-prayer-*`, `FixsFlipClock.regions()`, `FixsFlipClock.findRegion()`, `FixsFlipClock.prayerTimes()`, callback `prayer.onPrayer`.
+- Demo: bagian "9. Jadwal sholat" di Playground (aktif/nonaktif, wilayah, waktu yang tampil, layout, bahasa, hitung mundur), contoh penempatan ke-7, dan tabel opsi `prayer.*`. Kode HTML/JS hasil Playground ikut menyertakan opsi sholat.
 
 **v1.1.0**
 - Baru: `padX` / `padY` untuk mengatur jarak isi jam ke tepi shape.

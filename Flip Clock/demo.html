@@ -93,6 +93,12 @@
   button,select{transition:border-color .15s,background .15s}
   button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
   #previewBox{background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:14px 14px}
+
+  /* ---- jadwal sholat ---- */
+  .sw{display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer}
+  .pbody{display:grid;gap:10px;transition:opacity .2s}
+  .pbody.off{opacity:.4;pointer-events:none}
+  .badge{display:inline-block;font-size:10.5px;letter-spacing:.06em;padding:1px 7px;border-radius:99px;background:var(--ink);color:var(--bg);vertical-align:middle;margin-left:6px}
 </style>
 </head>
 <body>
@@ -191,6 +197,12 @@
       </div>
       <button class="use" type="button" data-use="float">Pakai di Playground ↓</button>
     </div>
+
+    <div class="box stack" style="grid-column:1/-1">
+      <div><h4>7. Jadwal sholat <span class="badge">BARU</span></h4><p class="cap">Imsak, Subuh, Terbit, Dhuha, Dzuhur, Ashar, Maghrib, Isya sesuai wilayah, lengkap dengan hitung mundur. Fitur ini opsional dan bisa dimatikan.</p></div>
+      <div class="mock dark full"><div style="width:100%;max-width:720px"><div data-slot="masjid"></div></div></div>
+      <button class="use" type="button" data-use="masjid">Pakai di Playground ↓</button>
+    </div>
   </div>
 
   <!-- ===================== PLAYGROUND ===================== -->
@@ -220,6 +232,7 @@
           <button type="button" data-preset="footer">Footer</button>
           <button type="button" data-preset="fullscreen">Layar penuh</button>
           <button type="button" data-preset="float">Melayang</button>
+          <button type="button" data-preset="masjid" style="grid-column:1/-1">Jadwal sholat</button>
         </div>
         <button type="button" id="resetAll">Reset ke default</button>
         <label>Posisi</label>
@@ -333,7 +346,7 @@
       <div class="f">
         <h3>8. Waktu &amp; bahasa</h3>
         <select id="tz">
-          <option value="">Zona waktu perangkat (otomatis)</option>
+          <option value="">Otomatis (perangkat, atau ikut wilayah jika jadwal sholat aktif)</option>
           <option value="Asia/Jakarta">WIB — Jakarta</option>
           <option value="Asia/Makassar">WITA — Makassar</option>
           <option value="Asia/Jayapura">WIT — Jayapura</option>
@@ -343,6 +356,37 @@
           <option value="Asia/Tokyo">Tokyo</option>
         </select>
         <select id="locale"><option value="en-US">Tanggal: English</option><option value="id-ID">Tanggal: Indonesia</option></select>
+      </div>
+
+      <div class="f">
+        <h3>9. Jadwal sholat <span class="badge">BARU</span></h3>
+        <label class="sw"><input type="checkbox" id="pEnabled"> Aktifkan jadwal sholat</label>
+        <p class="cap" style="margin:0">Opsional. Nonaktif = jam tampil seperti biasa, tanpa jadwal.</p>
+        <div class="pbody off" id="pBody">
+          <label for="pRegion">Wilayah</label>
+          <select id="pRegion"></select>
+          <label>Waktu yang ditampilkan</label>
+          <div class="checks">
+            <label><input type="checkbox" data-pshow="imsak"> Imsak</label>
+            <label><input type="checkbox" data-pshow="fajr"> Subuh</label>
+            <label><input type="checkbox" data-pshow="sunrise"> Terbit</label>
+            <label><input type="checkbox" data-pshow="dhuha"> Dhuha</label>
+            <label><input type="checkbox" data-pshow="dhuhr"> Dzuhur</label>
+            <label><input type="checkbox" data-pshow="asr"> Ashar</label>
+            <label><input type="checkbox" data-pshow="maghrib"> Maghrib</label>
+            <label><input type="checkbox" data-pshow="isha"> Isya</label>
+          </div>
+          <label for="pLayout">Tata letak</label>
+          <select id="pLayout"><option value="row">Satu baris (jam ikut mengecil)</option><option value="grid">Grid (menyesuaikan lebar, boleh 2 baris)</option></select>
+          <label for="pLang">Nama waktu</label>
+          <select id="pLang"><option value="id">Indonesia (Subuh, Dzuhur, Ashar)</option><option value="en">English (Fajr, Dhuhr, Asr)</option></select>
+          <div class="checks">
+            <label><input type="checkbox" id="pCountdown"> Hitung mundur</label>
+            <label><input type="checkbox" id="pLocation"> Nama wilayah</label>
+            <label><input type="checkbox" id="pHighlight"> Tandai berikutnya</label>
+          </div>
+          <p class="cap" style="margin:0">Dihitung langsung di browser (acuan Kemenag RI: Subuh 20°, Isya 18°, Ashar Syafi'i, ihtiyat +2 menit), tanpa API dan tanpa internet. Jam mengikuti zona waktu wilayah, kecuali kamu pilih zona waktu sendiri di bagian 8.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -386,6 +430,21 @@
       <tr><td><code>gapGroup</code></td><td><code>data-gap-group</code></td><td>Jarak antar pasangan jam / menit / detik (px)</td></tr>
       <tr><td><code>gapDate</code></td><td><code>data-gap-date</code></td><td>Jarak jam ke tanggal &amp; credit (px)</td></tr>
       <tr><td><code>credit</code></td><td><code>data-credit</code></td><td>Tulisan ©fixsarts.studio</td></tr>
+      <tr><td><code>prayer.enabled</code></td><td><code>data-prayer</code></td><td>Aktifkan jadwal sholat (default mati). Tulis <code>data-prayer="false"</code> untuk mematikan</td></tr>
+      <tr><td><code>prayer.region</code></td><td><code>data-prayer-region</code></td><td>Id / nama wilayah, contoh <code>kota-bandung</code>, <code>Jakarta Selatan</code>, <code>banjarmasin-timur</code> (default). Daftar lengkap: <code>FixsFlipClock.regions()</code></td></tr>
+      <tr><td><code>prayer.lat</code> <code>prayer.lon</code></td><td><code>data-prayer-lat</code> <code>data-prayer-lon</code></td><td>Koordinat sendiri (mengalahkan <code>region</code>). Isi bersama <code>timezone</code>; nama tampilan lewat <code>prayer.name</code> / <code>data-prayer-name</code></td></tr>
+      <tr><td><code>prayer.timezone</code></td><td><code>data-prayer-timezone</code></td><td>Zona waktu IANA lokasi, contoh <code>Asia/Makassar</code></td></tr>
+      <tr><td><code>prayer.show</code></td><td><code>data-prayer-show="imsak,subuh,dzuhur,ashar,maghrib,isya"</code></td><td>Waktu yang tampil: <code>imsak</code> <code>subuh</code> <code>terbit</code> <code>dhuha</code> <code>dzuhur</code> <code>ashar</code> <code>maghrib</code> <code>isya</code>. Via JS pakai <code>fajr</code> <code>sunrise</code> <code>dhuhr</code> <code>asr</code> <code>isha</code></td></tr>
+      <tr><td><code>prayer.layout</code></td><td><code>data-prayer-layout</code></td><td><code>row</code> (satu baris) atau <code>grid</code> (menyesuaikan lebar container)</td></tr>
+      <tr><td><code>prayer.countdown</code></td><td><code>data-prayer-countdown</code></td><td>Hitung mundur menuju waktu berikutnya</td></tr>
+      <tr><td><code>prayer.location</code></td><td><code>data-prayer-location</code></td><td>Tampilkan nama wilayah</td></tr>
+      <tr><td><code>prayer.highlight</code></td><td><code>data-prayer-highlight</code></td><td>Tandai waktu berikutnya &amp; redupkan yang sudah lewat</td></tr>
+      <tr><td><code>prayer.lang</code></td><td><code>data-prayer-lang</code></td><td><code>id</code> atau <code>en</code> (nama waktu)</td></tr>
+      <tr><td><code>prayer.names</code></td><td>-</td><td>Ganti nama waktu, contoh <code>{ fajr: 'Shubuh' }</code></td></tr>
+      <tr><td><code>prayer.ihtiyat</code> <code>fajrAngle</code> <code>ishaAngle</code> <code>asrFactor</code></td><td><code>data-prayer-ihtiyat</code> <code>-fajr-angle</code> <code>-isha-angle</code> <code>-asr-factor</code></td><td>Parameter hitung. Default Kemenag: 2 menit, 20°, 18°, 1 (Syafi'i; 2 = Hanafi)</td></tr>
+      <tr><td><code>prayer.adjust</code></td><td><code>data-prayer-adjust="fajr:1,isha:-1"</code></td><td>Koreksi manual (menit) per waktu</td></tr>
+      <tr><td><code>prayer.gap</code></td><td><code>data-prayer-gap</code></td><td>Tambahan jarak ke jadwal (px pada ukuran <code>size</code>), kosong = otomatis</td></tr>
+      <tr><td><code>prayer.onPrayer</code></td><td>-</td><td>Fungsi <code>(nama, key, 'HH:MM')</code> yang dipanggil tepat saat waktu sholat masuk (hanya via JS)</td></tr>
     </table>
     <p class="cap" style="margin:12px 0 0">Via JS: <code>const jam = FixsFlipClock.create('#jam', {...})</code>, ubah saat berjalan dengan <code>jam.update({...})</code>, hapus dengan <code>jam.destroy()</code>.</p>
   </div>
@@ -414,7 +473,11 @@
     dateFormat: { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', comma: true, uppercase: false },
     gapDigit: null, gapGroup: null, gapDate: null,
     radius: 14, padX: null, padY: null, shadow: false, border: false, blinkColon: false, secondsBar: false,
-    show: { hours: true, minutes: true, seconds: true, date: true, ampm: true }
+    show: { hours: true, minutes: true, seconds: true, date: true, ampm: true },
+    prayer: {
+      enabled: false, region: 'banjarmasin-timur', layout: 'row', countdown: true, location: true, highlight: true, lang: 'id',
+      show: { imsak: true, fajr: true, sunrise: false, dhuha: false, dhuhr: true, asr: true, maghrib: true, isha: true }
+    }
   };
   var PRESETS = {
     hero:       { theme: 'light', size: 90, hour12: false, locale: 'id-ID', timezone: 'Asia/Makassar', show: { seconds: false } },
@@ -422,7 +485,9 @@
     sidebar:    { theme: 'light', size: 56, hour12: false, credit: false, show: { date: false } },
     footer:     { theme: 'light', size: 46, padding: false, transparent: true, show: { seconds: false } },
     fullscreen: { theme: 'dark', size: 180 },
-    float:      { theme: 'dark', size: 70, hour12: false, position: 'bottom-right', show: { seconds: false } }
+    float:      { theme: 'dark', size: 70, hour12: false, position: 'bottom-right', show: { seconds: false } },
+    masjid:     { theme: 'dark', size: 80, hour12: false, show: { ampm: false },
+                  prayer: { enabled: true, layout: 'grid', show: { sunrise: true, dhuha: true } } }
   };
   var TIPS = {
     hero: 'Taruh tepat setelah kotak search di section hero. Opsional, bungkus dengan <div style="max-width:560px;margin:24px auto 0">.',
@@ -430,7 +495,8 @@
     sidebar: 'Taruh di dalam sidebar atau card. Ukuran menyesuaikan lebar container.',
     footer: 'Taruh di footer. Opsional, bungkus dengan <div style="width:100%;max-width:400px">.',
     fullscreen: 'Taruh di container selebar layar untuk tampilan idle / lock screen.',
-    float: 'Taruh di mana saja di halaman (misal sebelum </body>). Jam menempel di pojok layar, tanpa wrapper.'
+    float: 'Taruh di mana saja di halaman (misal sebelum </body>). Jam menempel di pojok layar, tanpa wrapper.',
+    masjid: 'Taruh di container yang cukup lebar (dashboard, layar masjid, halaman jadwal). Layout grid menyesuaikan lebar container. Matikan fitur ini kapan saja dengan menghapus data-prayer.'
   };
   var DEFAULT_TIP = 'Pilih preset di Penempatan, atau atur sendiri. Kode di atas selalu sesuai pengaturan terakhir.';
 
@@ -452,6 +518,21 @@
   /* ---------- Playground ---------- */
   var state = clone(BASE), activePreset = null, mode = 'html';
   var clock = FixsFlipClock.create('#preview', state);
+
+  /* nama waktu sholat untuk atribut HTML (alias Indonesia dikenali widget) */
+  var PNAME = { imsak: 'imsak', fajr: 'subuh', sunrise: 'terbit', dhuha: 'dhuha', dhuhr: 'dzuhur', asr: 'ashar', maghrib: 'maghrib', isha: 'isya' };
+  var PORDER = ['imsak', 'fajr', 'sunrise', 'dhuha', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+  /* dropdown wilayah dikelompokkan per provinsi, diambil dari data widget */
+  (function () {
+    var sel = $('#pRegion'), group = null, lastProv = null;
+    FixsFlipClock.regions().forEach(function (r) {
+      if (r.province !== lastProv) { group = document.createElement('optgroup'); group.label = r.province; sel.appendChild(group); lastProv = r.province; }
+      var o = document.createElement('option');
+      o.value = r.id; o.textContent = (r.parent ? '\u21B3 ' : '') + r.name;
+      group.appendChild(o);
+    });
+  })();
 
   function toHex(c) { return /^#[0-9a-f]{6}$/i.test(c) ? c : '#000000'; }
 
@@ -481,6 +562,20 @@
     $('#radius').value = state.radius; $('#radiusV').textContent = state.radius + 'px';
     syncPads();
     syncGaps();
+    syncPrayer();
+  }
+
+  function syncPrayer() {
+    var p = state.prayer;
+    $('#pEnabled').checked = p.enabled;
+    $('#pBody').classList.toggle('off', !p.enabled);
+    $('#pRegion').value = p.region;
+    $$('[data-pshow]').forEach(function (i) { i.checked = !!p.show[i.dataset.pshow]; });
+    $('#pLayout').value = p.layout;
+    $('#pLang').value = p.lang;
+    $('#pCountdown').checked = p.countdown;
+    $('#pLocation').checked = p.location;
+    $('#pHighlight').checked = p.highlight;
   }
 
   /* padding shape: otomatis = perkiraan proporsi bawaan widget */
@@ -560,6 +655,18 @@
     if (s.gapDigit != null) a.push(['gap-digit', s.gapDigit]);
     if (s.gapGroup != null) a.push(['gap-group', s.gapGroup]);
     if (s.gapDate != null) a.push(['gap-date', s.gapDate]);
+    if (s.prayer.enabled) {
+      var p = s.prayer;
+      a.push(['prayer', 'true'], ['prayer-region', p.region]);
+      if (JSON.stringify(p.show) !== JSON.stringify(BASE.prayer.show)) {
+        a.push(['prayer-show', PORDER.filter(function (k) { return p.show[k]; }).map(function (k) { return PNAME[k]; }).join(',')]);
+      }
+      if (p.layout !== 'row') a.push(['prayer-layout', p.layout]);
+      if (p.lang !== 'id') a.push(['prayer-lang', p.lang]);
+      if (!p.countdown) a.push(['prayer-countdown', 'false']);
+      if (!p.location) a.push(['prayer-location', 'false']);
+      if (!p.highlight) a.push(['prayer-highlight', 'false']);
+    }
     return a;
   }
 
@@ -596,6 +703,15 @@
       if (s.gapDigit != null) o.gapDigit = s.gapDigit;
       if (s.gapGroup != null) o.gapGroup = s.gapGroup;
       if (s.gapDate != null) o.gapDate = s.gapDate;
+      if (s.prayer.enabled) {
+        var p = s.prayer;
+        o.prayer = { enabled: true, region: p.region, show: p.show };
+        if (p.layout !== 'row') o.prayer.layout = p.layout;
+        if (p.lang !== 'id') o.prayer.lang = p.lang;
+        if (!p.countdown) o.prayer.countdown = false;
+        if (!p.location) o.prayer.location = false;
+        if (!p.highlight) o.prayer.highlight = false;
+      }
       out ='<script src="' + CDN + '"><\/script>\n<div id="jam"></div>\n\n<script>\n  FixsFlipClock.create("#jam", ' +
         JSON.stringify(o, null, 2).replace(/\n/g, '\n  ') + ');\n<\/script>';
     }
@@ -672,6 +788,21 @@
   });
   $('#padAuto').onclick = function () { state.padX = state.padY = null; syncPads(); apply(); };
   $('#size').addEventListener('input', syncPads);
+  /* jadwal sholat */
+  $('#pEnabled').onchange = function () { state.prayer.enabled = this.checked; syncPrayer(); apply(); };
+  $('#pRegion').onchange = function () { state.prayer.region = this.value; apply(); };
+  $$('[data-pshow]').forEach(function (i) {
+    i.onchange = function () {
+      state.prayer.show[i.dataset.pshow] = i.checked;
+      if (!PORDER.some(function (k) { return state.prayer.show[k]; })) { state.prayer.show[i.dataset.pshow] = true; i.checked = true; }   // minimal satu waktu
+      apply();
+    };
+  });
+  $('#pLayout').onchange = function () { state.prayer.layout = this.value; apply(); };
+  $('#pLang').onchange = function () { state.prayer.lang = this.value; apply(); };
+  [['#pCountdown', 'countdown'], ['#pLocation', 'location'], ['#pHighlight', 'highlight']].forEach(function (x) {
+    $(x[0]).onchange = function () { state.prayer[x[1]] = this.checked; apply(); };
+  });
   $('#tz').onchange = function () { state.timezone = this.value || null; apply(); };
   $('#locale').onchange = function () { state.locale = this.value; apply(); };
 
