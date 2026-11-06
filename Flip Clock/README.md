@@ -88,6 +88,12 @@ Unduh `flip-clock.js`, simpan di proyek kamu, lalu:
 | `prayer.highlight` | `data-prayer-highlight` | `true` | Tandai waktu berikutnya, redupkan yang sudah lewat |
 | `prayer.lang` | `data-prayer-lang` | `id` | `id` atau `en` (nama waktu) |
 | `prayer.onPrayer` | - | - | Callback `(nama, key, 'HH:MM')` saat waktu sholat masuk |
+| `maxWidth` | `data-max-width` | `null` | Lebar maksimum widget (px). Kosong = penuh mengikuti container. Cocok untuk section, contoh `720` |
+| `marginX` `marginY` | `data-margin-x` `data-margin-y` | `0` | Margin luar widget dari tepi container (px) |
+| `mobile.breakpoint` | `data-mobile-breakpoint` | `520` | Aturan HP aktif jika lebar container <= nilai ini |
+| `mobile.size` | `data-mobile-size` | `null` | Ukuran kartu di HP (px). Kosong = sama dengan `size` |
+| `mobile.marginX` `mobile.marginY` `mobile.maxWidth` | `data-mobile-margin-x` `-margin-y` `-max-width` | `null` | Margin & lebar maksimum khusus HP. Kosong = sama dengan desktop |
+| `order` | `data-order` | `clock,date,location,prayer,countdown,credit` | Urutan komponen dari atas ke bawah |
 | `loadFont` | - | `true` | Muat Oswald & Roboto dari Google Fonts. Set `false` untuk pakai font sendiri |
 | `fontFamily` | - | Oswald | Font angka |
 
@@ -118,6 +124,32 @@ jam.update({ prayer: { enabled: true } });    // nyalakan lagi
 - **Cek jadwal tanpa widget**: `FixsFlipClock.prayerTimes(new Date(), { region: 'kota-banjarmasin' })`.
 - **Notifikasi saat waktu masuk**: `prayer.onPrayer = (nama, key, jam) => { ... }`.
 - Layout `grid` menyesuaikan lebar container. Pada mode melayang (`data-position`) lebar mengikuti isi, jadi grid tampil satu baris.
+
+## Penempatan di section, margin & tampilan HP
+
+Secara default widget memenuhi lebar container-nya. Di section yang lebar (full width), atur lebar maksimum dan margin supaya tidak terlalu penuh:
+
+```html
+<div data-fixs-flipclock data-theme="light" data-size="90" data-hour12="false"
+     data-max-width="760" data-margin-x="16" data-margin-y="24"
+     data-mobile-size="56" data-mobile-margin-x="16" data-mobile-margin-y="12"></div>
+```
+
+- `maxWidth` membatasi lebar widget dan otomatis di-center (atau ikut `align`). Grid jadwal sholat ikut dibatasi.
+- `marginX` / `marginY` memberi jarak dari tepi container, dihitung dalam auto-fit sehingga jam tidak mepet.
+- Blok `mobile` hanya berlaku saat lebar **container** <= `mobile.breakpoint` (default 520px). Nilai yang dikosongkan mengikuti pengaturan desktop. Tanpa opsi ini, tampilan sama seperti versi sebelumnya.
+- Di `demo.html`, tombol **Pratinjau HP** menyempitkan preview untuk mencoba aturan HP.
+
+## Susunan komponen
+
+Urutan komponen diatur lewat `order` (atau `data-order`). Komponen: `clock`, `date`, `location` (nama wilayah), `prayer` (jadwal), `countdown` (hitung mundur), `credit`. Komponen yang tidak aktif dilewati, dan yang tidak disebut ditaruh di belakang.
+
+```html
+<!-- nama wilayah dipindah ke bawah "Menuju ..." -->
+<div data-fixs-flipclock data-prayer data-order="clock,date,prayer,countdown,location,credit"></div>
+```
+
+Di Playground `demo.html` ada bagian **Susunan komponen (BETA)**: seret (drag & drop) atau pakai tombol ▲▼, lalu salin kode hasilnya.
 
 ## Contoh penempatan
 
@@ -183,6 +215,13 @@ Semua contoh ini bisa dicoba dan diatur langsung di `demo.html`.
 - Setelah update file, lakukan hard refresh (Ctrl+Shift+R). Link CDN `@main` bisa tersimpan di cache hingga beberapa jam; gunakan tag versi (`@v1.0.1`) agar pasti.
 
 ## Changelog
+
+**v1.3.0**
+- Baru: `maxWidth`, `marginX`, `marginY` untuk penempatan di section (lebar terbatas + margin).
+- Baru: blok `mobile` (`breakpoint`, `size`, `marginX`, `marginY`, `maxWidth`) untuk aturan khusus layar sempit.
+- Baru: `order` / `data-order` untuk mengatur urutan komponen (jam, tanggal, nama wilayah, jadwal, hitung mundur, credit).
+- Perubahan: grid jadwal sholat tidak lagi melebar sampai ujung container; kolom dibatasi lebarnya dan di-center.
+- Demo: preset & contoh **Section**, bagian "Lebar, margin & HP" (dengan pratinjau Tablet/HP), dan "Susunan komponen (BETA)" dengan drag & drop.
 
 **v1.2.0**
 - Baru: **jadwal sholat** (Imsak, Subuh, Terbit, Dhuha, Dzuhur, Ashar, Maghrib, Isya) per wilayah, hitung mundur, penanda waktu berikutnya, layout `row`/`grid`, bisa dimatikan (default mati).

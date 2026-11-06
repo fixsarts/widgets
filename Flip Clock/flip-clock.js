@@ -1,5 +1,5 @@
 /*!
- * Fixs Flip Clock v1.2.0
+ * Fixs Flip Clock v1.3.0
  * Widget jam flip tanpa dependensi, bisa dipasang di website mana pun.
  * ©fixsarts.studio
  *
@@ -83,6 +83,17 @@
     position: null,         // null = ikut posisi elemen | 'top-left' | 'top-center' | 'top-right'
                             //   | 'bottom-left' | 'bottom-center' | 'bottom-right' (melayang/fixed)
     offset: 16,             // jarak dari tepi layar (px), hanya untuk mode melayang
+    maxWidth: null,         // lebar maksimum widget (px). null = penuh mengikuti container (cocok untuk section: mis. 720)
+    marginX: 0,             // margin kiri-kanan dari tepi container (px)
+    marginY: 0,             // margin atas-bawah (px)
+    mobile: {               // aturan khusus layar sempit (HP). Aktif jika lebar container <= breakpoint
+      breakpoint: 520,      //   batas lebar (px)
+      size: null,           //   ukuran kartu di HP (px). null = sama seperti `size`
+      marginX: null,        //   margin kiri-kanan di HP. null = sama seperti `marginX`
+      marginY: null,        //   margin atas-bawah di HP
+      maxWidth: null        //   lebar maksimum di HP
+    },
+    order: ['clock', 'date', 'location', 'prayer', 'countdown', 'credit'],   // urutan komponen (bisa diubah / drag & drop di demo)
     prayer: {               // JADWAL SHOLAT (dihitung di browser, tanpa API)
       enabled: false,       //   true = tampilkan jadwal sholat di bawah tanggal
       region: 'banjarmasin-timur',  // id / nama wilayah, contoh: 'kota-bandung', 'Kota Makassar', 'Jakarta Selatan'
@@ -429,12 +440,14 @@
     '.credit{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;',
     '  font-size:max(9px,calc(var(--h)*.065));letter-spacing:.04em;color:var(--credit);text-align:var(--ta,center)}',
     /* jadwal sholat */
-    '.pt{display:flex;flex-direction:column;align-items:var(--ai,center);gap:calc(var(--h)*.09);',
-    '  margin-top:calc(var(--h)*var(--gp,-.04));font-family:"Roboto","Helvetica Neue",Arial,sans-serif}',
+    '.pt{display:flex;flex-direction:column;align-items:var(--ai,center);font-family:"Roboto","Helvetica Neue",Arial,sans-serif}',
+    '.ploc,.pcd{font-family:"Roboto","Helvetica Neue",Arial,sans-serif;max-width:100%}',
+    '.tf{margin-top:calc(var(--h)*var(--gp,-.04))}',                   /* komponen sholat pertama dalam satu kelompok */
+    '.tg{margin-top:calc(var(--h)*(.09 - var(--gt,.17)))}',            /* komponen sholat yang menempel di komponen sholat lain */
     '.ploc{font-size:calc(var(--h)*.115);letter-spacing:.03em;color:var(--date);text-align:var(--ta,center)}',
     '.pl{display:flex;gap:calc(var(--h)*.05);justify-content:var(--ai,center)}',
     '.pg{align-self:stretch}',
-    '.pg .pl{display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--h)*.62),1fr));width:100%}',
+    '.pg .pl{display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--h)*.62),calc(var(--h)*1.15)));width:100%}',
     '.pi{display:flex;flex-direction:column;align-items:center;gap:calc(var(--h)*.02);',
     '  min-width:calc(var(--h)*.62);padding:calc(var(--h)*.07) calc(var(--h)*.08);',
     '  border-radius:calc(var(--r)*.7);background:rgba(128,128,128,.14);transition:opacity .4s,background .4s}',
@@ -554,6 +567,7 @@
     var o = this.opts, show = o.show, self = this;
 
     this._ready = false;
+    this._mobile = this._calcMobile();
     if (o.loadFont) loadFont();
     // lokasi sholat menentukan zona waktu jam & tanggal (kecuali `timezone` diisi sendiri)
     this.loc = o.prayer.enabled ? resolveLocation(o.prayer, o.timezone) : null;
@@ -575,7 +589,7 @@
     clock.style.setProperty('--credit', c.credit);
     clock.style.setProperty('--font', o.fontFamily);
     clock.style.setProperty('--r', o.radius + 'px');
-    clock.style.setProperty('--h', o.size + 'px');
+    clock.style.setProperty('--h', this._v('size') + 'px');
     clock.style.setProperty('--ai', o.align === 'left' ? 'flex-start' : o.align === 'right' ? 'flex-end' : 'center');
     clock.style.setProperty('--ta', o.align === 'left' || o.align === 'right' ? o.align : 'center');
     if (o.transparent) clock.style.setProperty('--bg', 'transparent');
@@ -593,7 +607,7 @@
     if (o.gapDate != null) clock.style.setProperty('--gt', o.gapDate / o.size);
     this._place();
 
-    var wrap = el('div', 'rw', clock);
+    var wrap = el('div', 'rw');
     var row = this.row = el('div', 'row', wrap);
     var dur = o.flipDuration;
     this.digits = { hours: null, minutes: null, seconds: null };
@@ -623,10 +637,24 @@
     }
 
     this.dateEl = (show.date && hasDate(o.dateFormat))
-      ? el('div', 'date' + (o.dateFormat.uppercase ? ' upper' : ''), clock) : null;
+      ? el('div', 'date' + (o.dateFormat.uppercase ? ' upper' : '')) : null;
     this._buildPrayer(clock);
-    this.creditEl = o.credit ? el('div', 'credit', clock) : null;
+    this.creditEl = o.credit ? el('div', 'credit') : null;
     if (this.creditEl) this.creditEl.textContent = '\u00A9fixsarts.studio';
+
+    // pasang semua komponen sesuai `order` (komponen yang tidak aktif dilewati)
+    var parts = { clock: wrap, date: this.dateEl, location: this.pLocEl, prayer: this.prayerEl, countdown: this.pCd, credit: this.creditEl };
+    var prevGroup = false, placed = 0;
+    normOrder(o.order).forEach(function (k) {
+      var n = parts[k];
+      if (!n) return;
+      var grp = k === 'location' || k === 'prayer' || k === 'countdown';   // kelompok sholat dirapatkan satu sama lain
+      if (grp && prevGroup) n.classList.add('tg');
+      else if (grp && placed) n.classList.add('tf');
+      prevGroup = grp;
+      placed++;
+      clock.appendChild(n);
+    });
 
     this._dt = null;
     this._pKey = null;
@@ -641,6 +669,22 @@
   /* ------------------------------------------------------------------ */
   /*  Jadwal sholat: tampilan, hitung mundur, callback                   */
   /* ------------------------------------------------------------------ */
+  var ORDER_DEFAULT = ['clock', 'date', 'location', 'prayer', 'countdown', 'credit'];
+  var ORDER_ALIAS = { jam: 'clock', time: 'clock', tanggal: 'date', wilayah: 'location', lokasi: 'location', jadwal: 'prayer',
+                      sholat: 'prayer', hitungmundur: 'countdown', kredit: 'credit' };
+
+  /** Rapikan urutan komponen: nama alias dikenali, yang tidak disebut ditaruh di belakang (urutan default). */
+  function normOrder(list) {
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function (k) {
+      k = String(k).toLowerCase().replace(/[^a-z]/g, '');
+      k = ORDER_ALIAS[k] || k;
+      if (ORDER_DEFAULT.indexOf(k) > -1 && out.indexOf(k) < 0) out.push(k);
+    });
+    ORDER_DEFAULT.forEach(function (k) { if (out.indexOf(k) < 0) out.push(k); });
+    return out;
+  }
+
   function pKey(k) { k = String(k).toLowerCase(); return PRAYER_ALIAS[k] || k; }
 
   /** Kunci waktu yang tampil (urut kronologis). Nama alias (subuh, dzuhur, isya, dst.) ikut dikenali. */
@@ -653,7 +697,7 @@
 
   FlipClock.prototype._buildPrayer = function (clock) {
     var o = this.opts, p = o.prayer, self = this;
-    this.prayerEl = null; this.pItems = {}; this.pCd = null; this._pKeys = [];
+    this.prayerEl = null; this.pLocEl = null; this.pItems = {}; this.pCd = null; this._pKeys = [];
     if (!p.enabled || !this.loc) return;
     var keys = this._pKeys = prayerKeys(p.show || {});
     if (!keys.length) return;
@@ -662,10 +706,10 @@
     if (isObj(p.names)) Object.keys(p.names).forEach(function (k) { names[pKey(k)] = p.names[k]; });
     this._pNames = names;
 
-    var wrap = this.prayerEl = el('div', 'pt' + (p.layout === 'grid' ? ' pg' : ''), clock);
+    var wrap = this.prayerEl = el('div', 'pt' + (p.layout === 'grid' ? ' pg' : ''));
     if (p.gap != null && !isNaN(p.gap)) clock.style.setProperty('--gp', p.gap / o.size);
 
-    if (p.location) el('div', 'ploc', wrap).textContent = this.loc.label;
+    if (p.location) { this.pLocEl = el('div', 'ploc'); this.pLocEl.textContent = this.loc.label; }
 
     var list = el('div', 'pl', wrap);
     keys.forEach(function (k) {
@@ -675,7 +719,7 @@
     });
 
     if (p.countdown) {
-      var cd = this.pCd = el('div', 'pcd', wrap);
+      var cd = this.pCd = el('div', 'pcd');
       this.pCdLbl = document.createTextNode('');
       cd.appendChild(this.pCdLbl);
       this.pCdTime = el('b', null, cd);
@@ -754,7 +798,13 @@
 
     if (!p) {                                   // ikut posisi elemen
       if (host.parentNode !== this.target) this.target.appendChild(host);
-      imp('position', 'static'); imp('transform', 'none'); imp('max-width', '100%');
+      imp('position', 'static'); imp('transform', 'none');
+      var mx = this._v('marginX') || 0, my = this._v('marginY') || 0, mw = this._v('maxWidth');
+      var lim = 'calc(100% - ' + (mx * 2) + 'px)';
+      imp('max-width', mw ? 'min(' + mw + 'px, ' + lim + ')' : lim);      // lebar penuh dikurangi margin, dibatasi maxWidth
+      imp('margin-top', my + 'px'); imp('margin-bottom', my + 'px');
+      imp('margin-left', o.align === 'left' ? mx + 'px' : 'auto');          // sisa ruang dibagi sesuai `align`
+      imp('margin-right', o.align === 'right' ? mx + 'px' : 'auto');
       return;
     }
 
@@ -778,20 +828,43 @@
     else { imp('left', '50%'); imp('transform', 'translateX(-50%)'); }
   };
 
-  /** Lebar yang tersedia untuk jam (di luar padding milik container). */
+  /** Apakah container sedang "sempit" (HP)? Mode melayang membandingkan dengan lebar layar. */
+  FlipClock.prototype._calcMobile = function () {
+    var o = this.opts, bp = o.mobile && o.mobile.breakpoint;
+    if (!bp) return false;
+    var w = o.position ? window.innerWidth : this.target.clientWidth;
+    return w > 0 && w <= bp;
+  };
+
+  /** Nilai opsi yang berlaku sekarang (memperhitungkan aturan `mobile`). */
+  FlipClock.prototype._v = function (k) {
+    var m = this.opts.mobile;
+    if (this._mobile && m && m[k] != null) return m[k];
+    return this.opts[k];
+  };
+
+  /** Lebar yang tersedia untuk jam (di luar padding container, margin, dan maxWidth). */
   FlipClock.prototype._avail = function () {
-    var o = this.opts;
-    if (o.position) return window.innerWidth - o.offset * 2;
-    var t = this.target, w = t.clientWidth;
-    if (!w) return 0;
-    var cs = window.getComputedStyle(t);
-    return w - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    var o = this.opts, mw = this._v('maxWidth'), w;
+    if (o.position) w = window.innerWidth - o.offset * 2;
+    else {
+      var t = this.target;
+      w = t.clientWidth;
+      if (!w) return 0;
+      var cs = window.getComputedStyle(t);
+      w = w - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0) - (this._v('marginX') || 0) * 2;
+    }
+    if (mw) w = Math.min(w, mw);
+    return w;
   };
 
   FlipClock.prototype._fit = function () {
     var o = this.opts;
     if (this._dead || !this.clock) return;
-    this.clock.style.setProperty('--h', o.size + 'px');
+    var mob = this._calcMobile();
+    if (mob !== this._mobile) { this._mobile = mob; this._place(); }      // masuk/keluar mode HP -> terapkan margin & lebar maksimum yang sesuai
+    var size = this._v('size');
+    this.clock.style.setProperty('--h', size + 'px');
     if (!o.fit) return;
     var avail = this._avail();
     if (avail <= 0) return;
@@ -802,10 +875,10 @@
       var pl = this.prayerEl.querySelector('.pl');
       if (pl) w = Math.max(w, pl.getBoundingClientRect().width, pl.scrollWidth);
     }
-    var padW = (o.padX != null || o.padY != null) ? (o.padX != null ? o.padX : o.size * 0.12) * 2 : (o.padding ? o.size * 0.24 : 0);
+    var padW = (o.padX != null || o.padY != null) ? (o.padX != null ? o.padX : size * 0.12) * 2 : (o.padding ? size * 0.24 : 0);
     var natural = w + padW;
     if (natural > avail) {
-      this.clock.style.setProperty('--h', Math.max(24, o.size * avail / natural) + 'px');
+      this.clock.style.setProperty('--h', Math.max(24, size * avail / natural) + 'px');
     }
   };
 
@@ -923,6 +996,23 @@
     if (d.position) o.position = d.position;
     if (d.offset) o.offset = parseFloat(d.offset);
 
+    // lebar maksimum & margin: data-max-width / data-margin-x / data-margin-y
+    if (d.maxWidth !== undefined) o.maxWidth = parseFloat(d.maxWidth) || null;
+    if (d.marginX !== undefined) o.marginX = parseFloat(d.marginX) || 0;
+    if (d.marginY !== undefined) o.marginY = parseFloat(d.marginY) || 0;
+
+    // aturan HP: data-mobile-breakpoint / -size / -margin-x / -margin-y / -max-width
+    var mb = {};
+    if (d.mobileBreakpoint) mb.breakpoint = parseFloat(d.mobileBreakpoint);
+    if (d.mobileSize) mb.size = parseFloat(d.mobileSize);
+    if (d.mobileMarginX !== undefined) mb.marginX = parseFloat(d.mobileMarginX) || 0;
+    if (d.mobileMarginY !== undefined) mb.marginY = parseFloat(d.mobileMarginY) || 0;
+    if (d.mobileMaxWidth) mb.maxWidth = parseFloat(d.mobileMaxWidth);
+    if (Object.keys(mb).length) o.mobile = mb;
+
+    // urutan komponen: data-order="clock,date,prayer,countdown,location,credit"
+    if (d.order) o.order = d.order.split(/[\s,]+/).filter(Boolean);
+
     // jadwal sholat: data-prayer (aktifkan) + data-prayer-region / -lat / -lon / -show / -layout / ...
     if (d.prayer !== undefined) {
       var pr = { enabled: bool(d.prayer) };
@@ -1011,7 +1101,7 @@
   /*  API publik                                                         */
   /* ------------------------------------------------------------------ */
   var API = {
-    version: '1.2.0',
+    version: '1.3.0',
     themes: THEMES,
     defaults: DEFAULTS,
     create: function (target, options) { return new FlipClock(target, options); },

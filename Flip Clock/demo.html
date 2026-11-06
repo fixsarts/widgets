@@ -98,6 +98,16 @@
   .sw{display:flex;gap:8px;align-items:center;font-weight:600;cursor:pointer}
   .pbody{display:grid;gap:10px;transition:opacity .2s}
   .pbody.off{opacity:.4;pointer-events:none}
+  .olist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+  .olist li{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:grab;user-select:none;transition:border-color .15s,box-shadow .15s,opacity .15s}
+  .olist li.drag{opacity:.35}
+  .olist li.over{border-color:var(--acc);box-shadow:0 -3px 0 var(--acc)}
+  .olist li.dim .oname{opacity:.45}
+  .olist .grip{color:var(--mute);font-size:16px;line-height:1;letter-spacing:-2px}
+  .olist .oname{flex:1;font-size:13px}
+  .olist .oname small{color:var(--mute);font-size:11px;margin-left:4px}
+  .olist .obtn{display:flex;gap:4px}
+  .olist .obtn button{width:28px;padding:2px 0;font-size:10px;line-height:1.6}
   .badge{display:inline-block;font-size:10.5px;letter-spacing:.06em;padding:1px 7px;border-radius:99px;background:var(--ink);color:var(--bg);vertical-align:middle;margin-left:6px}
 </style>
 </head>
@@ -203,6 +213,16 @@
       <div class="mock dark full"><div style="width:100%;max-width:720px"><div data-slot="masjid"></div></div></div>
       <button class="use" type="button" data-use="masjid">Pakai di Playground ↓</button>
     </div>
+
+    <div class="box stack" style="grid-column:1/-1">
+      <div><h4>8. Di dalam Section <span class="badge">BARU</span></h4><p class="cap">Lebar dibatasi (<code>maxWidth</code>), ada margin kiri-kanan &amp; atas-bawah, dan ukuran sendiri saat dibuka di HP. Tidak memenuhi layar seperti Hero / Layar penuh.</p></div>
+      <div class="mock gray" style="padding:22px 0">
+        <div style="display:grid;gap:10px;justify-items:center;padding:0 16px"><div class="fake-line" style="width:34%;height:12px"></div><div class="fake-line" style="width:58%"></div></div>
+        <div data-slot="section"></div>
+        <div style="display:grid;gap:10px;justify-items:center;padding:0 16px"><div class="fake-line" style="width:70%"></div><div class="fake-line" style="width:46%"></div></div>
+      </div>
+      <button class="use" type="button" data-use="section">Pakai di Playground ↓</button>
+    </div>
   </div>
 
   <!-- ===================== PLAYGROUND ===================== -->
@@ -232,7 +252,8 @@
           <button type="button" data-preset="footer">Footer</button>
           <button type="button" data-preset="fullscreen">Layar penuh</button>
           <button type="button" data-preset="float">Melayang</button>
-          <button type="button" data-preset="masjid" style="grid-column:1/-1">Jadwal sholat</button>
+          <button type="button" data-preset="section">Section</button>
+          <button type="button" data-preset="masjid" style="grid-column:span 2">Jadwal sholat</button>
         </div>
         <button type="button" id="resetAll">Reset ke default</button>
         <label>Posisi</label>
@@ -388,6 +409,41 @@
           <p class="cap" style="margin:0">Dihitung langsung di browser (acuan Kemenag RI: Subuh 20°, Isya 18°, Ashar Syafi'i, ihtiyat +2 menit), tanpa API dan tanpa internet. Jam mengikuti zona waktu wilayah, kecuali kamu pilih zona waktu sendiri di bagian 8.</p>
         </div>
       </div>
+
+      <div class="f">
+        <h3>10. Lebar, margin &amp; HP <span class="badge">BARU</span></h3>
+        <label for="maxW">Lebar maksimum: <span id="maxWV"></span></label>
+        <input type="range" id="maxW" min="0" max="1200" step="10" value="0">
+        <label for="mX">Margin kiri-kanan: <span id="mXV"></span></label>
+        <input type="range" id="mX" min="0" max="120" value="0">
+        <label for="mY">Margin atas-bawah: <span id="mYV"></span></label>
+        <input type="range" id="mY" min="0" max="120" value="0">
+        <button id="boxAuto" type="button">Lebar penuh &amp; tanpa margin</button>
+
+        <label style="margin-top:6px">Pratinjau lebar layar</label>
+        <div class="chips">
+          <button type="button" data-pw="">Penuh</button>
+          <button type="button" data-pw="768">Tablet</button>
+          <button type="button" data-pw="390">HP</button>
+        </div>
+        <p class="cap" style="margin:0">Aturan HP aktif saat lebar container &le; batas di bawah. Klik <b>HP</b> untuk melihat hasilnya di preview.</p>
+        <label for="mBp">Batas lebar HP: <span id="mBpV"></span></label>
+        <input type="range" id="mBp" min="320" max="900" step="10" value="520">
+        <label for="mSize">Ukuran jam di HP: <span id="mSizeV"></span></label>
+        <input type="range" id="mSize" min="24" max="220" value="130">
+        <label for="mMX">Margin kiri-kanan di HP: <span id="mMXV"></span></label>
+        <input type="range" id="mMX" min="0" max="80" value="0">
+        <label for="mMY">Margin atas-bawah di HP: <span id="mMYV"></span></label>
+        <input type="range" id="mMY" min="0" max="80" value="0">
+        <button id="mobAuto" type="button">Reset pengaturan HP</button>
+      </div>
+
+      <div class="f">
+        <h3>11. Susunan komponen <span class="badge">BETA</span></h3>
+        <p class="cap" style="margin:0">Seret (drag &amp; drop) untuk mengubah urutan dari atas ke bawah, atau pakai tombol &#9650;&#9660;. Komponen yang sedang nonaktif diredupkan dan dilewati.</p>
+        <ul class="olist" id="orderList"></ul>
+        <button id="orderReset" type="button">Urutan default</button>
+      </div>
     </div>
   </div>
 
@@ -430,6 +486,12 @@
       <tr><td><code>gapGroup</code></td><td><code>data-gap-group</code></td><td>Jarak antar pasangan jam / menit / detik (px)</td></tr>
       <tr><td><code>gapDate</code></td><td><code>data-gap-date</code></td><td>Jarak jam ke tanggal &amp; credit (px)</td></tr>
       <tr><td><code>credit</code></td><td><code>data-credit</code></td><td>Tulisan ©fixsarts.studio</td></tr>
+      <tr><td><code>maxWidth</code></td><td><code>data-max-width</code></td><td>Lebar maksimum widget (px). Kosong = penuh mengikuti container. Cocok untuk section, contoh <code>720</code></td></tr>
+      <tr><td><code>marginX</code> <code>marginY</code></td><td><code>data-margin-x</code> <code>data-margin-y</code></td><td>Margin luar widget dari tepi container (px)</td></tr>
+      <tr><td><code>mobile.breakpoint</code></td><td><code>data-mobile-breakpoint</code></td><td>Aturan HP aktif jika lebar container &le; nilai ini (default <code>520</code>)</td></tr>
+      <tr><td><code>mobile.size</code></td><td><code>data-mobile-size</code></td><td>Ukuran kartu di HP (px)</td></tr>
+      <tr><td><code>mobile.marginX</code> <code>mobile.marginY</code> <code>mobile.maxWidth</code></td><td><code>data-mobile-margin-x</code> <code>-margin-y</code> <code>-max-width</code></td><td>Margin &amp; lebar maksimum khusus HP. Kosong = sama seperti desktop</td></tr>
+      <tr><td><code>order</code></td><td><code>data-order="clock,date,prayer,countdown,location,credit"</code></td><td>Urutan komponen dari atas ke bawah: <code>clock</code> <code>date</code> <code>location</code> <code>prayer</code> <code>countdown</code> <code>credit</code>. Yang tidak disebut ditaruh di belakang. Atur lewat drag &amp; drop di Playground</td></tr>
       <tr><td><code>prayer.enabled</code></td><td><code>data-prayer</code></td><td>Aktifkan jadwal sholat (default mati). Tulis <code>data-prayer="false"</code> untuk mematikan</td></tr>
       <tr><td><code>prayer.region</code></td><td><code>data-prayer-region</code></td><td>Id / nama wilayah, contoh <code>kota-bandung</code>, <code>Jakarta Selatan</code>, <code>banjarmasin-timur</code> (default). Daftar lengkap: <code>FixsFlipClock.regions()</code></td></tr>
       <tr><td><code>prayer.lat</code> <code>prayer.lon</code></td><td><code>data-prayer-lat</code> <code>data-prayer-lon</code></td><td>Koordinat sendiri (mengalahkan <code>region</code>). Isi bersama <code>timezone</code>; nama tampilan lewat <code>prayer.name</code> / <code>data-prayer-name</code></td></tr>
@@ -474,6 +536,9 @@
     gapDigit: null, gapGroup: null, gapDate: null,
     radius: 14, padX: null, padY: null, shadow: false, border: false, blinkColon: false, secondsBar: false,
     show: { hours: true, minutes: true, seconds: true, date: true, ampm: true },
+    maxWidth: null, marginX: 0, marginY: 0,
+    mobile: { breakpoint: 520, size: null, marginX: null, marginY: null, maxWidth: null },
+    order: ['clock', 'date', 'location', 'prayer', 'countdown', 'credit'],
     prayer: {
       enabled: false, region: 'banjarmasin-timur', layout: 'row', countdown: true, location: true, highlight: true, lang: 'id',
       show: { imsak: true, fajr: true, sunrise: false, dhuha: false, dhuhr: true, asr: true, maghrib: true, isha: true }
@@ -486,6 +551,8 @@
     footer:     { theme: 'light', size: 46, padding: false, transparent: true, show: { seconds: false } },
     fullscreen: { theme: 'dark', size: 180 },
     float:      { theme: 'dark', size: 70, hour12: false, position: 'bottom-right', show: { seconds: false } },
+    section:    { theme: 'light', size: 90, hour12: false, show: { ampm: false }, maxWidth: 760, marginX: 16, marginY: 24, radius: 20, shadow: true,
+                  mobile: { size: 56, marginX: 16, marginY: 12 }, prayer: { enabled: true, layout: 'grid' } },
     masjid:     { theme: 'dark', size: 80, hour12: false, show: { ampm: false },
                   prayer: { enabled: true, layout: 'grid', show: { sunrise: true, dhuha: true } } }
   };
@@ -496,6 +563,7 @@
     footer: 'Taruh di footer. Opsional, bungkus dengan <div style="width:100%;max-width:400px">.',
     fullscreen: 'Taruh di container selebar layar untuk tampilan idle / lock screen.',
     float: 'Taruh di mana saja di halaman (misal sebelum </body>). Jam menempel di pojok layar, tanpa wrapper.',
+    section: 'Taruh di dalam section / blok konten. Lebar dibatasi 760px, ada margin, dan di HP ukuran jam mengecil dengan margin sendiri. Atur angkanya di bagian 10.',
     masjid: 'Taruh di container yang cukup lebar (dashboard, layar masjid, halaman jadwal). Layout grid menyesuaikan lebar container. Matikan fitur ini kapan saja dengan menghapus data-prayer.'
   };
   var DEFAULT_TIP = 'Pilih preset di Penempatan, atau atur sendiri. Kode di atas selalu sesuai pengaturan terakhir.';
@@ -563,6 +631,76 @@
     syncPads();
     syncGaps();
     syncPrayer();
+    syncBox();
+    renderOrder();
+  }
+
+  /* lebar, margin & HP */
+  function syncBox() {
+    var m = state.mobile;
+    $('#maxW').value = state.maxWidth || 0; $('#maxWV').textContent = state.maxWidth ? state.maxWidth + 'px' : 'penuh';
+    $('#mX').value = state.marginX; $('#mXV').textContent = state.marginX + 'px';
+    $('#mY').value = state.marginY; $('#mYV').textContent = state.marginY + 'px';
+    $('#mBp').value = m.breakpoint; $('#mBpV').textContent = m.breakpoint + 'px';
+    [['mSize', 'size', state.size], ['mMX', 'marginX', state.marginX], ['mMY', 'marginY', state.marginY]].forEach(function (x) {
+      var v = m[x[1]], shown = v != null ? v : x[2];
+      $('#' + x[0]).value = shown;
+      $('#' + x[0] + 'V').textContent = shown + 'px' + (v == null ? ' (sama dgn desktop)' : '');
+    });
+  }
+
+  /* susunan komponen: daftar yang bisa di-drag */
+  var ONAME = { clock: 'Jam', date: 'Tanggal', location: 'Nama wilayah', prayer: 'Jadwal sholat', countdown: 'Hitung mundur', credit: 'Credit' };
+  function isOn(k) {
+    var s = state, p = s.prayer;
+    if (k === 'clock') return true;
+    if (k === 'date') return !!s.show.date;
+    if (k === 'credit') return !!s.credit;
+    if (!p.enabled) return false;
+    return k === 'prayer' ? true : (k === 'location' ? !!p.location : !!p.countdown);
+  }
+  function moveOrder(from, to) {
+    if (from === to || from < 0 || to < 0 || to >= state.order.length) return;
+    var k = state.order.splice(from, 1)[0];
+    state.order.splice(to, 0, k);
+    activePreset = null;
+    renderOrder(); apply(true);
+  }
+  function renderOrder() {
+    var ul = $('#orderList'), dragFrom = -1;
+    ul.innerHTML = '';
+    state.order.forEach(function (k, i) {
+      var li = document.createElement('li');
+      li.draggable = true; li.className = isOn(k) ? '' : 'dim';
+      var grip = document.createElement('span'); grip.className = 'grip'; grip.textContent = '\u22EE\u22EE';
+      var name = document.createElement('span'); name.className = 'oname'; name.textContent = ONAME[k];
+      if (!isOn(k)) { var sm = document.createElement('small'); sm.textContent = 'nonaktif'; name.appendChild(sm); }
+      var btns = document.createElement('span'); btns.className = 'obtn';
+      [['\u25B2', -1], ['\u25BC', 1]].forEach(function (b) {
+        var bt = document.createElement('button'); bt.type = 'button'; bt.textContent = b[0];
+        bt.onclick = function () { moveOrder(i, i + b[1]); };
+        btns.appendChild(bt);
+      });
+      li.appendChild(grip); li.appendChild(name); li.appendChild(btns);
+      li.ondragstart = function (e) {
+        dragFrom = i; li.classList.add('drag');
+        if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k); }
+      };
+      li.ondragover = function (e) { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; li.classList.add('over'); };
+      li.ondragleave = function () { li.classList.remove('over'); };
+      li.ondrop = function (e) { e.preventDefault(); li.classList.remove('over'); moveOrder(dragFrom, i); };
+      li.ondragend = function () { li.classList.remove('drag'); };
+      ul.appendChild(li);
+    });
+  }
+
+  /* lebar preview (simulasi layar tablet / HP) */
+  var previewW = null;
+  function applyPreviewW() {
+    var t = $('#preview');
+    t.style.maxWidth = previewW ? previewW + 'px' : '';
+    t.style.margin = previewW ? '0 auto' : '';
+    $$('[data-pw]').forEach(function (b) { b.classList.toggle('on', (+b.dataset.pw || null) === previewW); });
   }
 
   function syncPrayer() {
@@ -655,6 +793,15 @@
     if (s.gapDigit != null) a.push(['gap-digit', s.gapDigit]);
     if (s.gapGroup != null) a.push(['gap-group', s.gapGroup]);
     if (s.gapDate != null) a.push(['gap-date', s.gapDate]);
+    if (s.maxWidth) a.push(['max-width', s.maxWidth]);
+    if (s.marginX) a.push(['margin-x', s.marginX]);
+    if (s.marginY) a.push(['margin-y', s.marginY]);
+    var mo = s.mobile;
+    if (mo.size != null) a.push(['mobile-size', mo.size]);
+    if (mo.marginX != null) a.push(['mobile-margin-x', mo.marginX]);
+    if (mo.marginY != null) a.push(['mobile-margin-y', mo.marginY]);
+    if (mo.breakpoint !== 520 && (mo.size != null || mo.marginX != null || mo.marginY != null)) a.push(['mobile-breakpoint', mo.breakpoint]);
+    if (JSON.stringify(s.order) !== JSON.stringify(BASE.order)) a.push(['order', s.order.join(',')]);
     if (s.prayer.enabled) {
       var p = s.prayer;
       a.push(['prayer', 'true'], ['prayer-region', p.region]);
@@ -703,6 +850,13 @@
       if (s.gapDigit != null) o.gapDigit = s.gapDigit;
       if (s.gapGroup != null) o.gapGroup = s.gapGroup;
       if (s.gapDate != null) o.gapDate = s.gapDate;
+      if (s.maxWidth) o.maxWidth = s.maxWidth;
+      if (s.marginX) o.marginX = s.marginX;
+      if (s.marginY) o.marginY = s.marginY;
+      var mo = {};
+      ['size', 'marginX', 'marginY'].forEach(function (k) { if (s.mobile[k] != null) mo[k] = s.mobile[k]; });
+      if (Object.keys(mo).length) { if (s.mobile.breakpoint !== 520) mo.breakpoint = s.mobile.breakpoint; o.mobile = mo; }
+      if (JSON.stringify(s.order) !== JSON.stringify(BASE.order)) o.order = s.order;
       if (s.prayer.enabled) {
         var p = s.prayer;
         o.prayer = { enabled: true, region: p.region, show: p.show };
@@ -721,10 +875,24 @@
   /* keepPreset = true hanya saat tombol preset dipakai; perubahan manual melepas tanda preset */
   function apply(keepPreset) {
     if (!keepPreset) activePreset = null;
+    applyPreviewW();
     clock.destroy();
     clock = FixsFlipClock.create('#preview', clone(state));   // dibuat ulang agar preview = pengaturan
     syncMarks();
     code();
+    if (state.order) refreshOrderState();
+  }
+
+  /* perbarui redup/nonaktif pada daftar urutan tanpa membangun ulang (supaya drag tidak terputus) */
+  function refreshOrderState() {
+    var items = $('#orderList').children;
+    for (var i = 0; i < items.length; i++) {
+      var k = state.order[i], on = isOn(k);
+      items[i].className = on ? '' : 'dim';
+      var nm = items[i].children[1];
+      nm.textContent = ONAME[k];
+      if (!on) { var sm = document.createElement('small'); sm.textContent = 'nonaktif'; nm.appendChild(sm); }
+    }
   }
 
   function usePreset(name) {
@@ -756,7 +924,7 @@
   $('#padding').onchange = function () { state.padding = this.checked; apply(); };
   $('#transparent').onchange = function () { state.transparent = this.checked; apply(); };
   $('#align').onchange = function () { state.align = this.value; apply(); };
-  $('#size').oninput = function () { state.size = +this.value; $('#sizeVal').textContent = this.value; syncGaps(); apply(); };
+  $('#size').oninput = function () { state.size = +this.value; $('#sizeVal').textContent = this.value; syncGaps(); syncBox(); apply(); };
 
   /* format tanggal */
   [['#dWeekday', 'weekday'], ['#dDay', 'day'], ['#dMonth', 'month'], ['#dYear', 'year']].forEach(function (p) {
@@ -788,6 +956,19 @@
   });
   $('#padAuto').onclick = function () { state.padX = state.padY = null; syncPads(); apply(); };
   $('#size').addEventListener('input', syncPads);
+  /* lebar, margin & HP */
+  $('#maxW').oninput = function () { state.maxWidth = +this.value || null; syncBox(); apply(); };
+  $('#mX').oninput = function () { state.marginX = +this.value; syncBox(); apply(); };
+  $('#mY').oninput = function () { state.marginY = +this.value; syncBox(); apply(); };
+  $('#boxAuto').onclick = function () { state.maxWidth = null; state.marginX = 0; state.marginY = 0; syncBox(); apply(); };
+  $('#mBp').oninput = function () { state.mobile.breakpoint = +this.value; syncBox(); apply(); };
+  [['#mSize', 'size'], ['#mMX', 'marginX'], ['#mMY', 'marginY']].forEach(function (x) {
+    $(x[0]).oninput = function () { state.mobile[x[1]] = +this.value; syncBox(); apply(); };
+  });
+  $('#mobAuto').onclick = function () { state.mobile = clone(BASE.mobile); syncBox(); apply(); };
+  $$('[data-pw]').forEach(function (b) { b.onclick = function () { previewW = +b.dataset.pw || null; apply(true); }; });
+  $('#orderReset').onclick = function () { state.order = BASE.order.slice(); renderOrder(); apply(); };
+
   /* jadwal sholat */
   $('#pEnabled').onchange = function () { state.prayer.enabled = this.checked; syncPrayer(); apply(); };
   $('#pRegion').onchange = function () { state.prayer.region = this.value; apply(); };
@@ -815,7 +996,7 @@
     });
   };
 
-  syncControls(); syncMarks(); code();
+  syncControls(); syncMarks(); code(); applyPreviewW();
 })();
 </script>
 </body>
