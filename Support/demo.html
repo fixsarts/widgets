@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support Widget — Pengaturan</title>
+  <link rel="stylesheet" href="css/demo.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Pengaturan Support Widget</h1>
+      <p>1. Atur di bawah &nbsp;→&nbsp; 2. Klik <b>Unduh</b> &nbsp;→&nbsp; 3. Timpa file <code>js/support-config.js</code></p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnReset" type="button">Reset</button>
+      <button class="btn" id="btnCopy" type="button">Salin</button>
+      <button class="btn primary" id="btnDownload" type="button">Unduh support-config.js</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="settings" id="settings"></aside>
+
+    <section class="stage">
+      <div class="bar">
+        <div class="seg">
+          <button type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+          <button type="button" data-device="mobile" aria-pressed="false">Mobile</button>
+        </div>
+        <div class="seg">
+          <button type="button" id="btnOpen">Buka popup</button>
+          <button type="button" id="btnReplay">Ulangi animasi</button>
+        </div>
+      </div>
+      <div class="viewport">
+        <iframe id="frame" title="Preview" src="index.html?swpreview=1"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- config dimuat dulu: pengaturan yang sedang dipakai jadi titik awal -->
+  <script src="js/support-config.js"></script>
+  <script src="js/support-widget.js" data-manual></script>
+  <script src="js/demo.js"></script>
+</body>
+</html>

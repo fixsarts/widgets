@@ -1,0 +1,194 @@
+/* Support Widget — style. Dimuat otomatis di dalam Shadow DOM oleh js/support-widget.js.
+   Semua nilai (warna, ukuran) datang dari variabel --sw-* yang diisi dari support-config.js. */
+
+:host { all: initial; display: block; }
+*, *::before, *::after { box-sizing: border-box; }
+
+.sw {
+  --sw-z: 2147483000;
+  font-family: var(--sw-font);
+  font-size: var(--sw-fs);
+  line-height: 1.45;
+  color: var(--sw-text);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+.sw p, .sw h2 { margin: 0; padding: 0; }
+.sw button { font-family: inherit; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sw button:focus-visible { outline: 3px solid var(--sw-pb-bg); outline-offset: 2px; }
+@media (max-width: 767px) { .sw.no-mobile { display: none; } }
+@media (min-width: 768px) { .sw.no-desktop { display: none; } }
+
+/* ---------- Tampilan widget ---------- */
+.sw-wrap { transition: opacity var(--sw-dur) ease, transform var(--sw-dur) ease; }
+.sw-wrap.inline { display: flex; width: 100%; }
+.sw-wrap.inline.left { justify-content: flex-start; }
+.sw-wrap.inline.center { justify-content: center; }
+.sw-wrap.inline.right { justify-content: flex-end; }
+.sw-wrap.floating { position: fixed; z-index: var(--sw-z); max-width: calc(100vw - 16px); }
+.sw-wrap.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.sw-wrap.is-hidden.scale { transform: scale(.9); }
+.sw-wrap.is-hidden.slide { transform: translateY(24px); }
+
+.sw-launcher {
+  appearance: none; -webkit-appearance: none;
+  display: flex; align-items: center; flex-wrap: wrap; gap: calc(var(--sw-lpad) * .8);
+  width: min(var(--sw-w), 100%);
+  padding: var(--sw-lpad);
+  font-size: var(--sw-lfs);
+  text-align: left;
+  color: var(--sw-text);
+  background: var(--sw-bg);
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-lradius);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .08);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.sw-launcher:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(15, 23, 42, .2), 0 3px 8px rgba(15, 23, 42, .1); }
+.sw-launcher:active { transform: none; }
+
+.sw-icon { flex: none; display: inline-flex; line-height: 0; }
+.sw-icon img { display: block; object-fit: contain; }
+.sw-texts { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sw-title { font-size: 1.6em; font-weight: 600; line-height: 1.15; letter-spacing: -.01em; }
+.sw-sub { font-size: 1.15em; font-weight: 600; color: var(--sw-muted); margin-top: 4px; }
+.sw-desc { color: var(--sw-muted); }
+
+/* Teks tombol di widget: pengaturannya sendiri (launcherButton) */
+.sw-cta {
+  flex: none; white-space: nowrap;
+  padding: .6em 1.1em;
+  border-radius: calc(var(--sw-lradius) * .6);
+  background: var(--sw-lb-bg);
+  color: var(--sw-lb-color);
+  font-size: var(--sw-lb-fs);
+  font-weight: var(--sw-lb-fw);
+}
+/* Rata isi banner */
+.sw-launcher.align-right { flex-direction: row-reverse; text-align: right; }
+.sw-launcher.align-right .sw-texts { align-items: flex-end; }
+.sw-launcher.align-center { flex-direction: column; justify-content: center; text-align: center; }
+.sw-launcher.align-center .sw-texts { flex: 0 1 auto; align-items: center; }
+
+/* Gaya "button": seluruh widget = satu tombol */
+.sw-launcher.is-button {
+  width: auto; flex-wrap: nowrap; gap: 10px;
+  padding: .65em 1.3em;
+  border-color: transparent; border-radius: 999px;
+  background: var(--sw-lb-bg); color: var(--sw-lb-color);
+  font-size: var(--sw-lb-fs); font-weight: var(--sw-lb-fw);
+}
+.sw-launcher.is-button .sw-cta { padding: 0; background: none; color: inherit; font: inherit; }
+
+@media (max-width: 480px) {
+  .sw-launcher:not(.is-button) .sw-title { font-size: 1.35em; }
+  .sw-launcher:not(.is-button) .sw-cta { width: 100%; text-align: center; }
+}
+
+/* ---------- Popup ---------- */
+.sw-overlay {
+  position: fixed; inset: 0; z-index: calc(var(--sw-z) + 1);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; overflow: hidden;
+  background: var(--sw-overlay);
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--sw-dur) ease, visibility 0s linear var(--sw-dur);
+}
+.sw-overlay.open { opacity: 1; visibility: visible; transition: opacity var(--sw-dur) ease, visibility 0s; }
+
+.sw-dialog {
+  position: relative;
+  width: min(var(--sw-popw), 100%);
+  max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px);
+  padding: max(var(--sw-pad), 20px);
+  color: var(--sw-text);
+  background: var(--sw-popbg);
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .35);
+  transition: transform var(--sw-dur) ease;
+  /* Tidak ada scrollbar putih: konten dikecilkan agar muat, dan kalau layar terlalu pendek
+     tetap bisa di-scroll (roda / sentuh) tanpa batang scroll terlihat. */
+  overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.sw-dialog::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.sw-overlay.scale .sw-dialog { transform: scale(.92); }
+.sw-overlay.slide .sw-dialog { transform: translateY(28px); }
+.sw-overlay.open .sw-dialog { transform: none; }
+
+.sw-close {
+  position: absolute; top: 10px; right: 10px; width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%;
+  background: rgba(127, 127, 127, .14); color: var(--sw-muted);
+  transition: background .15s;
+}
+.sw-close:hover { background: rgba(127, 127, 127, .28); }
+
+.sw-view { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.sw-view.thanks { display: none; padding: 12px 0 4px; }
+.sw-dialog.is-thanks .sw-view.main { display: none; }
+.sw-dialog.is-thanks .sw-view.thanks { display: flex; }
+
+.sw-d-icon { line-height: 0; margin-top: 4px; }
+.sw-d-title { font-size: 1.45em; font-weight: 700; line-height: 1.2; padding: 0 28px; }
+.sw-d-sub { font-weight: 600; color: var(--sw-muted); }
+.sw-d-desc, .sw-d-instr { color: var(--sw-muted); white-space: pre-line; }
+.sw-d-instr { font-size: .92em; }
+.sw-t-msg { font-size: 1.15em; font-weight: 600; line-height: 1.4; white-space: pre-line; }
+
+.sw-qr {
+  display: flex; align-items: center; justify-content: center;
+  max-width: 100%; min-height: 120px; padding: 12px;
+  appearance: none; -webkit-appearance: none; font: inherit; cursor: zoom-in;
+  background: #fff;
+  border: 1px solid rgba(127, 127, 127, .25);
+  border-radius: calc(var(--sw-radius) * .6);
+}
+/* Gambar QR mengecil mengikuti tinggi layar supaya popup selalu muat */
+.sw-qr img {
+  display: block; width: auto; height: auto;
+  max-width: min(var(--sw-qr), 100%);
+  max-height: max(150px, calc(100vh - 430px)); max-height: max(150px, calc(100dvh - 430px));
+}
+@media (max-width: 480px) {
+  .sw-qr img { max-height: max(150px, calc(100vh - 500px)); max-height: max(150px, calc(100dvh - 500px)); }
+}
+.sw-dialog:focus { outline: none; }
+.sw-qr-err { display: none; padding: 20px; color: #555; font-size: .9em; text-align: center; }
+.sw-qr.failed img { display: none; }
+.sw-qr.failed .sw-qr-err { display: block; }
+
+/* Teks tombol di popup: pengaturannya sendiri (popupButton) */
+.sw-btn {
+  appearance: none; -webkit-appearance: none;
+  width: 100%; padding: .75em 1.4em;
+  border: 0; border-radius: calc(var(--sw-radius) * .6);
+  background: var(--sw-pb-bg);
+  color: var(--sw-pb-color);
+  font-size: var(--sw-pb-fs);
+  font-weight: var(--sw-pb-fw);
+  transition: filter .15s, transform .1s;
+}
+.sw-btn:hover { filter: brightness(1.08); }
+.sw-btn:active { transform: scale(.98); }
+
+/* Gambar QRIS diperbesar */
+.sw-zoom {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  background: var(--sw-overlay); cursor: zoom-out;
+  opacity: 0; visibility: hidden;
+  transition: opacity .2s ease, visibility 0s linear .2s;
+}
+.sw-zoom:focus { outline: none; }
+.sw-zoom.open { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s; }
+.sw-zoom img {
+  display: block; max-width: 100%; max-height: 100%;
+  padding: 10px; background: #fff; border-radius: 14px; box-shadow: 0 20px 60px rgba(0, 0, 0, .45);
+}
+.sw-zoom.open img { animation: sw-pop .22s ease; }
+@keyframes sw-pop { from { transform: scale(.94); } to { transform: none; } }
+
+@media (prefers-reduced-motion: reduce) { .sw * { transition-duration: .01ms !important; } }
