@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Support Widget — Pengaturan</title>
+  <link rel="stylesheet" href="css/demo.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Pengaturan Support Widget</h1>
+      <p>1. Atur di bawah &nbsp;→&nbsp; 2. Klik <b>Salin script</b> &nbsp;→&nbsp; 3. Tempel di website tujuan &nbsp;·&nbsp; pengaturan tersimpan otomatis</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnReset" type="button">Reset</button>
+      <button class="btn primary" id="btnCopy" type="button">Salin script</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="settings" id="settings"></aside>
+
+    <section class="stage">
+      <div class="bar">
+        <div class="seg">
+          <button type="button" data-device="desktop" aria-pressed="true">Desktop</button>
+          <button type="button" data-device="mobile" aria-pressed="false">Mobile</button>
+        </div>
+        <div class="seg">
+          <button type="button" id="btnOpen">Buka popup</button>
+          <button type="button" id="btnReplay">Ulangi animasi</button>
+        </div>
+      </div>
+      <form class="site" id="siteForm">
+        <input type="text" id="siteUrl" placeholder="Preview di websitemu: https://contoh.com" autocomplete="off" inputmode="url">
+        <button class="btn primary" type="submit">Muat</button>
+        <button class="btn" type="button" id="siteClear">Halaman contoh</button>
+        <label class="top-field" id="topField" hidden>Jarak dari atas <input type="number" id="siteTop" value="140" min="0" max="2000"> px</label>
+      </form>
+      <p class="site-note" id="siteNote">Widget ditempel di atas tampilan websitemu. Pada posisi "Melayang", <b>seret widget langsung di preview</b> untuk mengatur posisinya. Posisi "di dalam halaman" final mengikuti letak <code>&lt;div id="support-widget"&gt;</code> di websitemu. Sebagian website menolak ditampilkan di preview (mis. Google, Facebook); itu batasan dari website tersebut.</p>
+      <div class="viewport">
+        <div class="device" id="device">
+          <iframe id="frame" title="Preview" src="index.html?swpreview=1"></iframe>
+          <div class="layer" id="layer" hidden><div class="slot" id="slot"></div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/support-widget.js" data-manual></script>
+  <script src="js/demo.js"></script>
+</body>
+</html>
