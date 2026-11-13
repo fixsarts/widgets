@@ -3,23 +3,25 @@
 window.SUPPORT_CONFIG = {
   "enabled": true,
   "layout": "banner",
+  "orientation": "portrait",
   "contentAlign": "left",
   "position": {
     "mode": "floating",
-    "corner": "bottom-right",
+    "corner": "bottom-left",
     "align": "left",
-    "offsetX": 20,
-    "offsetY": 100
+    "offsetX": 13,
+    "offsetY": 12
   },
   "text": {
     "title": "Support the Creator",
     "subtitle": "Suka dengan website ini?",
     "description": "Dukung pengembangan dan kreativitasnya.",
-    "instructions": "Buka aplikasi e-wallet atau mobile banking, pilih Scan / QRIS, lalu pindai kode di atas. Nominal bebas.",
-    "thanks": "Terima kasih banyak! Dukunganmu sangat berarti untuk pengembangan website ini."
+    "instructions": "Scan / QRIS, lalu pindai kode di atas.",
+    "thanks": "Thanks! Dukunganmu sangat berarti untuk Pengembangan Website ini."
   },
   "launcherButton": {
     "show": true,
+    "placement": "side",
     "label": "Dukung Sekarang",
     "color": "#ffffff",
     "background": "#2f4fd0",
@@ -33,6 +35,10 @@ window.SUPPORT_CONFIG = {
     "background": "#2f4fd0",
     "fontSize": 16,
     "fontWeight": 600
+  },
+  "closeButton": {
+    "show": true,
+    "remember": "never"
   },
   "icon": {
     "show": true,
@@ -51,10 +57,13 @@ window.SUPPORT_CONFIG = {
     "overlayOpacity": 55
   },
   "size": {
-    "scale": 75,
-    "width": 400,
+    "scale": 60,
+    "autoWidth": true,
+    "width": 250,
+    "autoHeight": true,
+    "height": 253,
     "fullWidth": false,
-    "padding": 20,
+    "padding": 15,
     "fontSize": 16,
     "radius": 20,
     "iconSize": 64,

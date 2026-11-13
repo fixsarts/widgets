@@ -15,7 +15,8 @@
   var SECTIONS = [
     { title: 'Tampilan', open: true, fields: [
       { k: 'layout', l: 'Gaya', t: 'select', o: [['banner', 'Banner (kartu)'], ['button', 'Tombol saja']] },
-      { k: 'size.scale', l: 'Skala banner (%) — teks & ikon ikut mengecil', t: 'num', when: isBanner },
+      { k: 'orientation', l: 'Bentuk banner', t: 'select', o: [['auto', 'Otomatis (turun baris kalau sempit)'], ['landscape', 'Landscape — selalu satu baris'], ['portrait', 'Portrait — selalu tersusun ke bawah']], when: isBanner, hint: 'Landscape/Portrait mempertahankan bentuk walau lebar atau skala diubah.' },
+      { k: 'size.scale', l: 'Skala banner (%)', t: 'num', when: isBanner, hint: 'Seluruh banner (teks, ikon, jarak) mengecil/membesar dengan bentuk sama. Ukuran tampil = lebar × skala.' },
       { k: 'contentAlign', l: 'Rata isi banner (ikon, teks, tombol)', t: 'select', o: [['left', 'Rata kiri'], ['center', 'Tengah'], ['right', 'Rata kanan']], when: isBanner },
       { k: 'position.mode', l: 'Posisi', t: 'select', o: [['inline', 'Di dalam halaman'], ['floating', 'Melayang di sudut layar']] },
       { k: 'position.align', l: 'Rata (di dalam halaman)', t: 'select', o: [['left', 'Kiri'], ['center', 'Tengah'], ['right', 'Kanan']], when: inline },
@@ -24,6 +25,10 @@
       { k: 'position.offsetY', l: 'Jarak atas/bawah (px)', t: 'num', when: floating },
       { k: 'display.desktop', l: 'Tampil di desktop', t: 'check' },
       { k: 'display.mobile', l: 'Tampil di mobile', t: 'check' }
+    ] },
+    { title: 'Tombol tutup (X)', fields: [
+      { k: 'closeButton.show', l: 'Tampilkan tombol X di banner', t: 'check', hint: 'Pengunjung bisa menyembunyikan widget. Di preview, "Ulangi animasi" memunculkannya lagi.' },
+      { k: 'closeButton.remember', l: 'Ingat pilihan pengunjung', t: 'select', o: [['never', 'Muncul lagi tiap halaman dimuat'], ['session', 'Sampai browser ditutup'], ['forever', 'Seterusnya']], when: function (c) { return c.closeButton.show; } }
     ] },
     { title: 'Teks utama', fields: [
       { k: 'text.title', l: 'Judul', t: 'text' },
@@ -34,6 +39,7 @@
     ] },
     { title: 'Tombol di tampilan widget', open: true, fields: [
       { k: 'launcherButton.show', l: 'Tampilkan tombol (gaya banner)', t: 'check', when: isBanner },
+      { k: 'launcherButton.placement', l: 'Posisi tombol di banner', t: 'select', o: [['side', 'Di samping teks'], ['below', 'Di bawah teks (di samping ikon)'], ['bottom', 'Di bawah, selebar banner']], when: function (c) { return c.layout === 'banner' && c.launcherButton.show; }, hint: 'Berguna kalau banner landscape terlalu panjang.' },
       { k: 'launcherButton.label', l: 'Teks tombol', t: 'text' },
       { k: 'launcherButton.color', l: 'Warna teks', t: 'color' },
       { k: 'launcherButton.background', l: 'Warna tombol', t: 'color' },
@@ -58,7 +64,10 @@
       { k: 'colors.overlayOpacity', l: 'Kepekatan overlay (0–100)', t: 'num' }
     ] },
     { title: 'Ukuran & font', fields: [
-      { k: 'size.width', l: 'Lebar widget (px)', t: 'num' },
+      { k: 'size.autoWidth', l: 'Lebar otomatis (pas dengan isi)', t: 'check', when: function (c) { return !c.size.fullWidth; } },
+      { k: 'size.width', l: 'Lebar (px, sebelum skala)', t: 'num', hint: 'Kalau lebar otomatis aktif, ini jadi batas lebar maksimal.' },
+      { k: 'size.autoHeight', l: 'Tinggi otomatis (pas dengan isi)', t: 'check', when: isBanner },
+      { k: 'size.height', l: 'Tinggi (px, sebelum skala)', t: 'num', when: function (c) { return c.layout === 'banner' && !c.size.autoHeight; }, hint: 'Isi banner otomatis di tengah secara vertikal.' },
       { k: 'size.fullWidth', l: 'Selebar penuh', t: 'check' },
       { k: 'size.padding', l: 'Padding (px)', t: 'num' },
       { k: 'size.fontSize', l: 'Ukuran font dasar (px)', t: 'num' },
@@ -69,7 +78,7 @@
     ] },
     { title: 'Ikon', fields: [
       { k: 'icon.show', l: 'Tampilkan ikon', t: 'check' },
-      { k: 'icon.name', l: 'Ikon bawaan', t: 'select', o: SW.icons.map(function (n) { return [n, n]; }) },
+      { k: 'icon.name', l: 'Pilih ikon', t: 'icons' },
       { k: 'icon.from', l: 'Warna ikon atas', t: 'color' },
       { k: 'icon.to', l: 'Warna ikon bawah', t: 'color' },
       { k: 'icon.url', l: 'Gambar ikon sendiri (opsional)', t: 'text', hint: 'Contoh: assets/logo.png — kosongkan untuk ikon bawaan.' }
@@ -105,13 +114,70 @@
   }
 
   /* ---------- preview ---------- */
+  var siteWidget = null; // widget yang ditempel di atas website pengguna (mode "Muat")
+  var layer = document.getElementById('layer'), slot = document.getElementById('slot'), device = document.getElementById('device');
+
   function send(action) {
-    if (!frame.contentWindow) return;
     var c = SW.normalize(cfg);
-    frame.contentWindow.postMessage({ sw: 'preview', action: action, config: c, qr: qrPreview }, '*');
+    if (siteWidget) {
+      siteWidget.opts.qrOverride = qrPreview || undefined;
+      if (action === 'config') siteWidget.update(c);
+      else if (action === 'open') siteWidget.open();
+      else if (action === 'close') siteWidget.close();
+      else if (action === 'replay') siteWidget.replay();
+      return;
+    }
+    if (!frame.contentWindow) return;
+    frame.contentWindow.postMessage({ sw: 'preview', action: action, config: c, qr: qrPreview, drag: true }, '*');
   }
   var sendLater = (function () { var t; return function () { clearTimeout(t); t = setTimeout(function () { send('config'); }, 80); }; })();
-  frame.addEventListener('load', function () { send('config'); });
+
+  /* ---------- seret widget di preview → posisi tersimpan di pengaturan ---------- */
+  var CORNERS = { 'top-left': 'kiri atas', 'top-right': 'kanan atas', 'bottom-left': 'kiri bawah', 'bottom-right': 'kanan bawah' };
+  function applyMove(pos) {
+    Object.assign(cfg.position, pos);
+    ['position.corner', 'position.offsetX', 'position.offsetY'].forEach(function (k) {
+      var i = document.querySelector('[data-k="' + k + '"]');
+      if (i) i.value = get(k);
+    });
+    toast('Posisi: ' + CORNERS[pos.corner] + ', jarak ' + pos.offsetX + ' / ' + pos.offsetY + ' px');
+  }
+  window.addEventListener('message', function (e) {
+    if (e.source === frame.contentWindow && e.data && e.data.sw === 'moved') applyMove(e.data.position);
+  });
+
+  /* ---------- preview di website pengguna ---------- */
+  function normalizeUrl(v) {
+    v = (v || '').trim();
+    if (!v) return '';
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    try { return new URL(v).href; } catch (e) { return ''; }
+  }
+  function setSite(url) {
+    if (siteWidget) { siteWidget.destroy(); siteWidget = null; }
+    layer.hidden = !url;
+    document.getElementById('topField').hidden = !url;
+    if (url) {
+      frame.src = url;
+      slot.style.top = (Number(document.getElementById('siteTop').value) || 0) + 'px';
+      siteWidget = SW.mount(slot, SW.normalize(cfg), { preview: true, container: layer, draggable: true, onMove: applyMove, qrOverride: qrPreview || undefined });
+      try { localStorage.setItem('sw-demo-site', url); } catch (e) {}
+    } else {
+      frame.src = 'index.html?swpreview=1';
+    }
+  }
+  document.getElementById('siteForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var url = normalizeUrl(document.getElementById('siteUrl').value);
+    if (!url) return toast('Masukkan alamat website yang valid, mis. https://contoh.com');
+    document.getElementById('siteUrl').value = url;
+    setSite(url);
+  });
+  document.getElementById('siteClear').addEventListener('click', function () { setSite(''); });
+  document.getElementById('siteTop').addEventListener('input', function () { slot.style.top = (Number(this.value) || 0) + 'px'; });
+  try { document.getElementById('siteUrl').value = localStorage.getItem('sw-demo-site') || ''; } catch (e) {}
+
+  frame.addEventListener('load', function () { if (!siteWidget) send('config'); });
 
   /* ---------- bangun panel ---------- */
   var conds = [];
@@ -135,6 +201,21 @@
       });
       return h('label', { className: 'field' }, [h('span', { text: 'Ganti gambar QRIS (preview)' }), inp,
         h('span', { className: 'hint', text: 'Setelah memilih, taruh file yang sama di folder assets/ lalu unduh config.' })]);
+    }
+    if (f.t === 'icons') {
+      var grid = h('div', { className: 'icons' });
+      var pick = function (name) {
+        Array.prototype.forEach.call(grid.children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-name') === name); });
+      };
+      SW.icons.forEach(function (n) {
+        var b = h('button', { type: 'button', title: n });
+        b.setAttribute('data-name', n);
+        b.innerHTML = SW.iconSvg(n, '#475569', '#475569', 24);
+        b.addEventListener('click', function () { set(f.k, n); pick(n); sendLater(); });
+        grid.appendChild(b);
+      });
+      pick(get(f.k));
+      return h('div', { className: 'field' }, [h('span', { text: f.l }), grid]);
     }
     var v = get(f.k), input;
     if (f.t === 'select') {
@@ -214,7 +295,7 @@
   Array.prototype.forEach.call(document.querySelectorAll('[data-device]'), function (b) {
     b.addEventListener('click', function () {
       Array.prototype.forEach.call(document.querySelectorAll('[data-device]'), function (x) { x.setAttribute('aria-pressed', x === b); });
-      frame.className = b.getAttribute('data-device');
+      device.className = 'device ' + (b.getAttribute('data-device') === 'mobile' ? 'mobile' : '');
     });
   });
 
