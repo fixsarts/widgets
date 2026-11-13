@@ -7,10 +7,10 @@ window.SUPPORT_CONFIG = {
   "contentAlign": "left",
   "position": {
     "mode": "floating",
-    "corner": "bottom-left",
+    "corner": "bottom-right",
     "align": "left",
-    "offsetX": 15,
-    "offsetY": 59
+    "offsetX": 28,
+    "offsetY": 105
   },
   "text": {
     "title": "Support the Creator",
