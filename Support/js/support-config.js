@@ -9,8 +9,8 @@ window.SUPPORT_CONFIG = {
     "mode": "floating",
     "corner": "bottom-left",
     "align": "left",
-    "offsetX": 13,
-    "offsetY": 12
+    "offsetX": 15,
+    "offsetY": 59
   },
   "text": {
     "title": "Support the Creator",
